@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EMDR: Your Healing Journey</title>
+    <title>EMDR: Your Healing Journey - Interactive Workbook</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,7 +12,7 @@
         body {
             font-family: 'Inter', sans-serif;
             line-height: 1.6;
-            background-color: #f4f0ed; /* Dusty background */
+            background-color: #f4f0ed;
         }
         h1, h2, h3, h4 {
             font-family: 'Cormorant Garamond', serif;
@@ -29,7 +29,7 @@
             bottom: 0;
             width: 50px;
             height: 3px;
-            background-color: #D1D5DB; /* Light Gray-Silver accent */
+            background-color: #D1D5DB;
             border-radius: 9999px;
         }
         .custom-list-item {
@@ -38,14 +38,14 @@
         }
         .custom-list-item::before {
             content: '✓';
-            color: #bca05b; /* Muted gold accent */
+            color: #bca05b;
             font-weight: bold;
             margin-right: 0.75rem;
             line-height: 1.5;
         }
         .journal-box {
-            background-color: #f0e8e6; /* Dusty rose background for journaling sections */
-            border-left: 4px solid #D1D5DB; /* Light Gray-Silver border */
+            background-color: #f0e8e6;
+            border-left: 4px solid #D1D5DB;
             padding: 1.5rem;
             border-radius: 0.75rem;
             margin-bottom: 1.5rem;
@@ -53,21 +53,97 @@
         .journal-input {
             width: 100%;
             min-height: 3rem;
-            border: 1px solid #d1d5db; /* Light gray border */
+            border: 1px solid #d1d5db;
             background-color: #fff;
             padding: 0.5rem;
             border-radius: 0.375rem;
             resize: vertical;
+            transition: border-color 0.2s ease;
         }
-        .silver-accent {
-            color: #a0a7b0; /* Soft silver color */
+        .journal-input:focus {
+            outline: none;
+            border-color: #9CA3AF;
+            box-shadow: 0 0 0 3px rgba(156, 163, 175, 0.1);
+        }
+        .save-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        .save-indicator.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .save-indicator.saving {
+            background-color: #FEF3C7;
+            color: #92400E;
+        }
+        .save-indicator.saved {
+            background-color: #D1FAE5;
+            color: #065F46;
+        }
+        .btn {
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .checkbox-custom {
+            width: 18px;
+            height: 18px;
+            margin-right: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .checkbox-custom:checked {
+            accent-color: #9CA3AF;
+        }
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                background-color: white !important;
+            }
+            .journal-box {
+                background-color: #f9f9f9 !important;
+                page-break-inside: avoid;
+            }
         }
     </style>
 </head>
 <body class="p-4 sm:p-8">
 
+    <!-- Save Indicator -->
+    <div id="saveIndicator" class="save-indicator">
+        <span id="saveText">Auto-saving...</span>
+    </div>
+
     <!-- Main Container -->
     <div class="max-w-4xl mx-auto bg-white p-6 sm:p-10 rounded-3xl shadow-2xl border border-gray-100">
+
+        <!-- Action Buttons -->
+        <div class="no-print flex flex-wrap gap-3 mb-6 justify-center sm:justify-end">
+            <button onclick="exportData()" class="btn bg-blue-100 hover:bg-blue-200 text-blue-800 px-4 py-2 rounded-lg">
+                📄 Export Notes
+            </button>
+            <button onclick="window.print()" class="btn bg-green-100 hover:bg-green-200 text-green-800 px-4 py-2 rounded-lg">
+                🖨️ Print
+            </button>
+            <button onclick="clearAllData()" class="btn bg-red-100 hover:bg-red-200 text-red-800 px-4 py-2 rounded-lg">
+                🗑️ Clear Notes
+            </button>
+        </div>
 
         <!-- Introductory Header with Logo on Top -->
         <header class="flex flex-col items-center mb-6 text-center">
@@ -176,57 +252,57 @@
             <div class="journal-box">
                 <h4 class="text-lg font-bold text-gray-700 mb-2">Memory 1:</h4>
                 <p class="mb-1 text-sm font-semibold">What happened:</p>
-                <textarea class="journal-input mb-3" rows="2"></textarea>
+                <textarea class="journal-input mb-3" rows="2" data-key="pos-memory-1-what"></textarea>
                 <p class="mb-1 text-sm font-semibold">How old were you:</p>
-                <textarea class="journal-input mb-3" rows="1"></textarea>
+                <textarea class="journal-input mb-3" rows="1" data-key="pos-memory-1-age"></textarea>
                 <p class="mb-1 text-sm font-semibold">What made this positive:</p>
-                <textarea class="journal-input mb-3" rows="2"></textarea>
+                <textarea class="journal-input mb-3" rows="2" data-key="pos-memory-1-positive"></textarea>
                 <p class="mb-1 text-sm font-semibold">How it makes you feel about yourself:</p>
-                <textarea class="journal-input" rows="2"></textarea>
+                <textarea class="journal-input" rows="2" data-key="pos-memory-1-feeling"></textarea>
             </div>
             <div class="journal-box">
                 <h4 class="text-lg font-bold text-gray-700 mb-2">Memory 2:</h4>
                 <p class="mb-1 text-sm font-semibold">What happened:</p>
-                <textarea class="journal-input mb-3" rows="2"></textarea>
+                <textarea class="journal-input mb-3" rows="2" data-key="pos-memory-2-what"></textarea>
                 <p class="mb-1 text-sm font-semibold">How old were you:</p>
-                <textarea class="journal-input mb-3" rows="1"></textarea>
+                <textarea class="journal-input mb-3" rows="1" data-key="pos-memory-2-age"></textarea>
                 <p class="mb-1 text-sm font-semibold">What made this positive:</p>
-                <textarea class="journal-input mb-3" rows="2"></textarea>
+                <textarea class="journal-input mb-3" rows="2" data-key="pos-memory-2-positive"></textarea>
                 <p class="mb-1 text-sm font-semibold">How it makes you feel about yourself:</p>
-                <textarea class="journal-input" rows="2"></textarea>
+                <textarea class="journal-input" rows="2" data-key="pos-memory-2-feeling"></textarea>
             </div>
             <div class="journal-box">
                 <h4 class="text-lg font-bold text-gray-700 mb-2">Memory 3:</h4>
                 <p class="mb-1 text-sm font-semibold">What happened:</p>
-                <textarea class="journal-input mb-3" rows="2"></textarea>
+                <textarea class="journal-input mb-3" rows="2" data-key="pos-memory-3-what"></textarea>
                 <p class="mb-1 text-sm font-semibold">How old were you:</p>
-                <textarea class="journal-input mb-3" rows="1"></textarea>
+                <textarea class="journal-input mb-3" rows="1" data-key="pos-memory-3-age"></textarea>
                 <p class="mb-1 text-sm font-semibold">What made this positive:</p>
-                <textarea class="journal-input mb-3" rows="2"></textarea>
+                <textarea class="journal-input mb-3" rows="2" data-key="pos-memory-3-positive"></textarea>
                 <p class="mb-1 text-sm font-semibold">How it makes you feel about yourself:</p>
-                <textarea class="journal-input" rows="2"></textarea>
+                <textarea class="journal-input" rows="2" data-key="pos-memory-3-feeling"></textarea>
             </div>
             <div class="journal-box">
                 <h4 class="text-lg font-bold text-gray-700 mb-2">Memory 4:</h4>
                 <p class="mb-1 text-sm font-semibold">What happened:</p>
-                <textarea class="journal-input mb-3" rows="2"></textarea>
+                <textarea class="journal-input mb-3" rows="2" data-key="pos-memory-4-what"></textarea>
                 <p class="mb-1 text-sm font-semibold">How old were you:</p>
-                <textarea class="journal-input mb-3" rows="1"></textarea>
+                <textarea class="journal-input mb-3" rows="1" data-key="pos-memory-4-age"></textarea>
                 <p class="mb-1 text-sm font-semibold">What made this positive:</p>
-                <textarea class="journal-input mb-3" rows="2"></textarea>
+                <textarea class="journal-input mb-3" rows="2" data-key="pos-memory-4-positive"></textarea>
                 <p class="mb-1 text-sm font-semibold">How it makes you feel about yourself:</p>
-                <textarea class="journal-input" rows="2"></textarea>
+                <textarea class="journal-input" rows="2" data-key="pos-memory-4-feeling"></textarea>
             </div>
             <div class="journal-box">
                 <h4 class="text-lg font-bold text-gray-700 mb-2">Memory 5:</h4>
                 <p class="mb-1 text-sm font-semibold">What happened:</p>
-                <textarea class="journal-input mb-3" rows="2"></textarea>
+                <textarea class="journal-input mb-3" rows="2" data-key="pos-memory-5-what"></textarea>
                 <p class="mb-1 text-sm font-semibold">How old were you:</p>
-                <textarea class="journal-input mb-3" rows="1"></textarea>
+                <textarea class="journal-input mb-3" rows="1" data-key="pos-memory-5-age"></textarea>
                 <p class="mb-1 text-sm font-semibold">What made this positive:</p>
-                <textarea class="journal-input mb-3" rows="2"></textarea>
+                <textarea class="journal-input mb-3" rows="2" data-key="pos-memory-5-positive"></textarea>
                 <p class="mb-1 text-sm font-semibold">How it makes you feel about yourself:</p>
-                <textarea class="journal-input" rows="2"></textarea>
+                <textarea class="journal-input" rows="2" data-key="pos-memory-5-feeling"></textarea>
             </div>
         </div>
 
@@ -236,77 +312,77 @@
             <div class="journal-box">
                 <h4 class="text-lg font-bold text-gray-700 mb-2">Memory 1:</h4>
                 <p class="mb-1 text-sm font-semibold">What happened:</p>
-                <textarea class="journal-input mb-3" rows="2"></textarea>
+                <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-1-what"></textarea>
                 <p class="mb-1 text-sm font-semibold">How old were you:</p>
-                <textarea class="journal-input mb-3" rows="1"></textarea>
+                <textarea class="journal-input mb-3" rows="1" data-key="diff-memory-1-age"></textarea>
                 <p class="mb-1 text-sm font-semibold">Worst part/image:</p>
-                <textarea class="journal-input mb-3" rows="2"></textarea>
+                <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-1-worst"></textarea>
                 <p class="mb-1 text-sm font-semibold">How it makes you think about yourself:</p>
-                <textarea class="journal-input mb-3" rows="2"></textarea>
+                <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-1-think"></textarea>
                 <p class="mb-1 text-sm font-semibold">Emotions it brings up:</p>
-                <textarea class="journal-input mb-3" rows="2"></textarea>
+                <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-1-emotions"></textarea>
                 <p class="mb-1 text-sm font-semibold">Where you feel it in your body:</p>
-                <textarea class="journal-input" rows="2"></textarea>
+                <textarea class="journal-input" rows="2" data-key="diff-memory-1-body"></textarea>
             </div>
             <div class="journal-box">
                 <h4 class="text-lg font-bold text-gray-700 mb-2">Memory 2:</h4>
                 <p class="mb-1 text-sm font-semibold">What happened:</p>
-                <textarea class="journal-input mb-3" rows="2"></textarea>
+                <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-2-what"></textarea>
                 <p class="mb-1 text-sm font-semibold">How old were you:</p>
-                <textarea class="journal-input mb-3" rows="1"></textarea>
+                <textarea class="journal-input mb-3" rows="1" data-key="diff-memory-2-age"></textarea>
                 <p class="mb-1 text-sm font-semibold">Worst part/image:</p>
-                <textarea class="journal-input mb-3" rows="2"></textarea>
+                <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-2-worst"></textarea>
                 <p class="mb-1 text-sm font-semibold">How it makes you think about yourself:</p>
-                <textarea class="journal-input mb-3" rows="2"></textarea>
+                <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-2-think"></textarea>
                 <p class="mb-1 text-sm font-semibold">Emotions it brings up:</p>
-                <textarea class="journal-input mb-3" rows="2"></textarea>
+                <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-2-emotions"></textarea>
                 <p class="mb-1 text-sm font-semibold">Where you feel it in your body:</p>
-                <textarea class="journal-input" rows="2"></textarea>
+                <textarea class="journal-input" rows="2" data-key="diff-memory-2-body"></textarea>
             </div>
             <div class="journal-box">
                 <h4 class="text-lg font-bold text-gray-700 mb-2">Memory 3:</h4>
                 <p class="mb-1 text-sm font-semibold">What happened:</p>
-                <textarea class="journal-input mb-3" rows="2"></textarea>
+                <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-3-what"></textarea>
                 <p class="mb-1 text-sm font-semibold">How old were you:</p>
-                <textarea class="journal-input mb-3" rows="1"></textarea>
+                <textarea class="journal-input mb-3" rows="1" data-key="diff-memory-3-age"></textarea>
                 <p class="mb-1 text-sm font-semibold">Worst part/image:</p>
-                <textarea class="journal-input mb-3" rows="2"></textarea>
+                <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-3-worst"></textarea>
                 <p class="mb-1 text-sm font-semibold">How it makes you think about yourself:</p>
-                <textarea class="journal-input mb-3" rows="2"></textarea>
+                <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-3-think"></textarea>
                 <p class="mb-1 text-sm font-semibold">Emotions it brings up:</p>
-                <textarea class="journal-input mb-3" rows="2"></textarea>
+                <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-3-emotions"></textarea>
                 <p class="mb-1 text-sm font-semibold">Where you feel it in your body:</p>
-                <textarea class="journal-input" rows="2"></textarea>
+                <textarea class="journal-input" rows="2" data-key="diff-memory-3-body"></textarea>
             </div>
             <div class="journal-box">
                 <h4 class="text-lg font-bold text-gray-700 mb-2">Memory 4:</h4>
                 <p class="mb-1 text-sm font-semibold">What happened:</p>
-                <textarea class="journal-input mb-3" rows="2"></textarea>
+                <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-4-what"></textarea>
                 <p class="mb-1 text-sm font-semibold">How old were you:</p>
-                <textarea class="journal-input mb-3" rows="1"></textarea>
+                <textarea class="journal-input mb-3" rows="1" data-key="diff-memory-4-age"></textarea>
                 <p class="mb-1 text-sm font-semibold">Worst part/image:</p>
-                <textarea class="journal-input mb-3" rows="2"></textarea>
+                <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-4-worst"></textarea>
                 <p class="mb-1 text-sm font-semibold">How it makes you think about yourself:</p>
-                <textarea class="journal-input mb-3" rows="2"></textarea>
+                <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-4-think"></textarea>
                 <p class="mb-1 text-sm font-semibold">Emotions it brings up:</p>
-                <textarea class="journal-input mb-3" rows="2"></textarea>
+                <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-4-emotions"></textarea>
                 <p class="mb-1 text-sm font-semibold">Where you feel it in your body:</p>
-                <textarea class="journal-input" rows="2"></textarea>
+                <textarea class="journal-input" rows="2" data-key="diff-memory-4-body"></textarea>
             </div>
             <div class="journal-box">
                 <h4 class="text-lg font-bold text-gray-700 mb-2">Memory 5:</h4>
                 <p class="mb-1 text-sm font-semibold">What happened:</p>
-                <textarea class="journal-input mb-3" rows="2"></textarea>
+                <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-5-what"></textarea>
                 <p class="mb-1 text-sm font-semibold">How old were you:</p>
-                <textarea class="journal-input mb-3" rows="1"></textarea>
+                <textarea class="journal-input mb-3" rows="1" data-key="diff-memory-5-age"></textarea>
                 <p class="mb-1 text-sm font-semibold">Worst part/image:</p>
-                <textarea class="journal-input mb-3" rows="2"></textarea>
+                <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-5-worst"></textarea>
                 <p class="mb-1 text-sm font-semibold">How it makes you think about yourself:</p>
-                <textarea class="journal-input mb-3" rows="2"></textarea>
+                <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-5-think"></textarea>
                 <p class="mb-1 text-sm font-semibold">Emotions it brings up:</p>
-                <textarea class="journal-input mb-3" rows="2"></textarea>
+                <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-5-emotions"></textarea>
                 <p class="mb-1 text-sm font-semibold">Where you feel it in your body:</p>
-                <textarea class="journal-input" rows="2"></textarea>
+                <textarea class="journal-input" rows="2" data-key="diff-memory-5-body"></textarea>
             </div>
         </div>
         
@@ -355,7 +431,6 @@
             <p>What beliefs or messages make you feel angry or ashamed, and how can we replace them with more loving ones?</p>
         </div>
 
-
         <!-- Gentle Coping Strategies -->
         <h2 class="text-2xl sm:text-3xl font-semibold text-gray-700 mt-12 mb-4 section-header">Gentle Coping Strategies</h2>
         <p class="text-gray-600 mb-4 leading-relaxed">
@@ -376,35 +451,35 @@
             <p><strong class="font-medium text-gray-800">This week I feel:</strong></p>
             <div class="flex items-center space-x-4">
                 <span class="font-semibold w-56">More peaceful about the past:</span>
-                <span class="flex-1"><input type="checkbox" class="mr-1 accent-[#D1D5DB]">Yes</span>
-                <span class="flex-1"><input type="checkbox" class="mr-1 accent-[#D1D5DB]">Sometimes</span>
-                <span class="flex-1"><input type="checkbox" class="mr-1 accent-[#D1D5DB]">Not yet</span>
+                <span class="flex-1"><input type="checkbox" class="mr-1 checkbox-custom" data-key="progress-peaceful-yes">Yes</span>
+                <span class="flex-1"><input type="checkbox" class="mr-1 checkbox-custom" data-key="progress-peaceful-sometimes">Sometimes</span>
+                <span class="flex-1"><input type="checkbox" class="mr-1 checkbox-custom" data-key="progress-peaceful-not-yet">Not yet</span>
             </div>
             <div class="flex items-center space-x-4">
                 <span class="font-semibold w-56">More confident in myself:</span>
-                <span class="flex-1"><input type="checkbox" class="mr-1 accent-[#D1D5DB]">Yes</span>
-                <span class="flex-1"><input type="checkbox" class="mr-1 accent-[#D1D5DB]">Sometimes</span>
-                <span class="flex-1"><input type="checkbox" class="mr-1 accent-[#D1D5DB]">Not yet</span>
+                <span class="flex-1"><input type="checkbox" class="mr-1 checkbox-custom" data-key="progress-confident-yes">Yes</span>
+                <span class="flex-1"><input type="checkbox" class="mr-1 checkbox-custom" data-key="progress-confident-sometimes">Sometimes</span>
+                <span class="flex-1"><input type="checkbox" class="mr-1 checkbox-custom" data-key="progress-confident-not-yet">Not yet</span>
             </div>
             <div class="flex items-center space-x-4">
                 <span class="font-semibold w-56">More hopeful about the future:</span>
-                <span class="flex-1"><input type="checkbox" class="mr-1 accent-[#D1D5DB]">Yes</span>
-                <span class="flex-1"><input type="checkbox" class="mr-1 accent-[#D1D5DB]">Sometimes</span>
-                <span class="flex-1"><input type="checkbox" class="mr-1 accent-[#D1D5DB]">Not yet</span>
+                <span class="flex-1"><input type="checkbox" class="mr-1 checkbox-custom" data-key="progress-hopeful-yes">Yes</span>
+                <span class="flex-1"><input type="checkbox" class="mr-1 checkbox-custom" data-key="progress-hopeful-sometimes">Sometimes</span>
+                <span class="flex-1"><input type="checkbox" class="mr-1 checkbox-custom" data-key="progress-hopeful-not-yet">Not yet</span>
             </div>
             <div class="flex items-center space-x-4">
                 <span class="font-semibold w-56">More connected to others:</span>
-                <span class="flex-1"><input type="checkbox" class="mr-1 accent-[#D1D5DB]">Yes</span>
-                <span class="flex-1"><input type="checkbox" class="mr-1 accent-[#D1D5DB]">Sometimes</span>
-                <span class="flex-1"><input type="checkbox" class="mr-1 accent-[#D1D5DB]">Not yet</span>
+                <span class="flex-1"><input type="checkbox" class="mr-1 checkbox-custom" data-key="progress-connected-yes">Yes</span>
+                <span class="flex-1"><input type="checkbox" class="mr-1 checkbox-custom" data-key="progress-connected-sometimes">Sometimes</span>
+                <span class="flex-1"><input type="checkbox" class="mr-1 checkbox-custom" data-key="progress-connected-not-yet">Not yet</span>
             </div>
             <div class="mt-6">
                 <p class="font-semibold">The biggest change I've noticed:</p>
-                <textarea class="journal-input mt-2" rows="3"></textarea>
+                <textarea class="journal-input mt-2" rows="3" data-key="biggest-change"></textarea>
             </div>
             <div>
                 <p class="font-semibold">What I want to focus on next:</p>
-                <textarea class="journal-input mt-2" rows="3"></textarea>
+                <textarea class="journal-input mt-2" rows="3" data-key="focus-next"></textarea>
             </div>
         </div>
         
@@ -440,6 +515,192 @@
         </p>
 
     </div>
+
+    <script>
+        // Auto-save functionality
+        let saveTimeout;
+        
+        function showSaveIndicator(status) {
+            const indicator = document.getElementById('saveIndicator');
+            const text = document.getElementById('saveText');
+            
+            indicator.classList.remove('saving', 'saved');
+            indicator.classList.add('show', status);
+            
+            if (status === 'saving') {
+                text.textContent = 'Auto-saving...';
+            } else if (status === 'saved') {
+                text.textContent = '✓ Saved';
+            }
+            
+            // Hide after 2 seconds if saved
+            if (status === 'saved') {
+                setTimeout(() => {
+                    indicator.classList.remove('show');
+                }, 2000);
+            }
+        }
+        
+        function saveData(key, value) {
+            try {
+                localStorage.setItem(`emdr_guide_${key}`, value);
+                showSaveIndicator('saved');
+            } catch (e) {
+                console.error('Error saving data:', e);
+            }
+        }
+        
+        function loadData() {
+            // Load text areas and inputs
+            document.querySelectorAll('textarea[data-key], input[data-key]').forEach(element => {
+                const key = element.getAttribute('data-key');
+                const savedValue = localStorage.getItem(`emdr_guide_${key}`);
+                if (savedValue) {
+                    if (element.type === 'checkbox') {
+                        element.checked = savedValue === 'true';
+                    } else {
+                        element.value = savedValue;
+                    }
+                }
+            });
+        }
+        
+        function setupAutoSave() {
+            // Text areas
+            document.querySelectorAll('textarea[data-key]').forEach(textarea => {
+                textarea.addEventListener('input', function() {
+                    clearTimeout(saveTimeout);
+                    showSaveIndicator('saving');
+                    
+                    saveTimeout = setTimeout(() => {
+                        const key = this.getAttribute('data-key');
+                        saveData(key, this.value);
+                    }, 1000);
+                });
+            });
+            
+            // Checkboxes
+            document.querySelectorAll('input[type="checkbox"][data-key]').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const key = this.getAttribute('data-key');
+                    saveData(key, this.checked.toString());
+                });
+            });
+        }
+        
+        function exportData() {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            
+            let exportText = `EMDR Healing Journey Guide - ${dateStr}\n`;
+            exportText += `Prepared with Janice LaFountaine, MS, LMFT\n`;
+            exportText += `${'='.repeat(60)}\n\n`;
+            
+            // Positive memories
+            let hasPositiveMemories = false;
+            for (let i = 1; i <= 5; i++) {
+                const what = localStorage.getItem(`emdr_guide_pos-memory-${i}-what`) || '';
+                const age = localStorage.getItem(`emdr_guide_pos-memory-${i}-age`) || '';
+                const positive = localStorage.getItem(`emdr_guide_pos-memory-${i}-positive`) || '';
+                const feeling = localStorage.getItem(`emdr_guide_pos-memory-${i}-feeling`) || '';
+                
+                if (what || age || positive || feeling) {
+                    if (!hasPositiveMemories) {
+                        exportText += `POSITIVE MEMORIES\n${'-'.repeat(25)}\n`;
+                        hasPositiveMemories = true;
+                    }
+                    exportText += `Memory ${i}:\n`;
+                    if (what) exportText += `What happened: ${what}\n`;
+                    if (age) exportText += `Age: ${age}\n`;
+                    if (positive) exportText += `What made it positive: ${positive}\n`;
+                    if (feeling) exportText += `How it makes me feel: ${feeling}\n`;
+                    exportText += '\n';
+                }
+            }
+            if (hasPositiveMemories) exportText += '\n';
+            
+            // Difficult memories
+            let hasDifficultMemories = false;
+            for (let i = 1; i <= 5; i++) {
+                const what = localStorage.getItem(`emdr_guide_diff-memory-${i}-what`) || '';
+                const age = localStorage.getItem(`emdr_guide_diff-memory-${i}-age`) || '';
+                const worst = localStorage.getItem(`emdr_guide_diff-memory-${i}-worst`) || '';
+                const think = localStorage.getItem(`emdr_guide_diff-memory-${i}-think`) || '';
+                const emotions = localStorage.getItem(`emdr_guide_diff-memory-${i}-emotions`) || '';
+                const body = localStorage.getItem(`emdr_guide_diff-memory-${i}-body`) || '';
+                
+                if (what || age || worst || think || emotions || body) {
+                    if (!hasDifficultMemories) {
+                        exportText += `DIFFICULT MEMORIES\n${'-'.repeat(25)}\n`;
+                        hasDifficultMemories = true;
+                    }
+                    exportText += `Memory ${i}:\n`;
+                    if (what) exportText += `What happened: ${what}\n`;
+                    if (age) exportText += `Age: ${age}\n`;
+                    if (worst) exportText += `Worst part: ${worst}\n`;
+                    if (think) exportText += `How it makes me think about myself: ${think}\n`;
+                    if (emotions) exportText += `Emotions: ${emotions}\n`;
+                    if (body) exportText += `Body sensations: ${body}\n`;
+                    exportText += '\n';
+                }
+            }
+            if (hasDifficultMemories) exportText += '\n';
+            
+            // Progress tracking
+            const biggestChange = localStorage.getItem('emdr_guide_biggest-change') || '';
+            const focusNext = localStorage.getItem('emdr_guide_focus-next') || '';
+            if (biggestChange || focusNext) {
+                exportText += `PROGRESS REFLECTIONS\n${'-'.repeat(25)}\n`;
+                if (biggestChange) exportText += `Biggest change noticed:\n${biggestChange}\n\n`;
+                if (focusNext) exportText += `What to focus on next:\n${focusNext}\n\n`;
+            }
+            
+            // Add timestamp
+            exportText += `\nGenerated: ${now.toLocaleString()}\n`;
+            
+            // Create and download file
+            const blob = new Blob([exportText], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `EMDR-Healing-Journey-${now.toISOString().split('T')[0]}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+        
+        function clearAllData() {
+            if (confirm('Are you sure you want to clear all your notes? This cannot be undone.')) {
+                // Get all keys that start with our prefix
+                const keys = Object.keys(localStorage).filter(key => key.startsWith('emdr_guide_'));
+                
+                // Remove all our data
+                keys.forEach(key => localStorage.removeItem(key));
+                
+                // Clear all form fields
+                document.querySelectorAll('textarea[data-key], input[data-key]').forEach(element => {
+                    if (element.type === 'checkbox') {
+                        element.checked = false;
+                    } else {
+                        element.value = '';
+                    }
+                });
+                
+                alert('All notes have been cleared.');
+            }
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            setupAutoSave();
+        });
+    </script>
 
 </body>
 </html>
