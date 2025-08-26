@@ -90,6 +90,64 @@
             background-color: #D1FAE5;
             color: #065F46;
         }
+        .save-indicator.error {
+            background-color: #FEE2E2;
+            color: #991B1B;
+        }
+        .save-indicator.success {
+            background-color: #D1FAE5;
+            color: #065F46;
+        }
+        /* Share Modal Styles */
+        .share-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .share-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .share-modal-content {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+        .share-modal.show .share-modal-content {
+            transform: scale(1);
+        }
+        .share-option {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .share-option:hover {
+            border-color: #d1d5db;
+            background-color: #f9fafb;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
         .btn {
             transition: all 0.2s ease;
             font-weight: 500;
@@ -134,8 +192,8 @@
 
         <!-- Action Buttons -->
         <div class="no-print flex flex-wrap gap-3 mb-6 justify-center sm:justify-end">
-            <button onclick="shareWorkbook()" class="btn bg-purple-100 hover:bg-purple-200 text-purple-800 px-4 py-2 rounded-lg">
-                📤 Share
+            <button onclick="openShareModal()" class="btn bg-purple-100 hover:bg-purple-200 text-purple-800 px-4 py-2 rounded-lg">
+                🔗 Share
             </button>
             <button onclick="exportData()" class="btn bg-blue-100 hover:bg-blue-200 text-blue-800 px-4 py-2 rounded-lg">
                 📄 Export Notes
@@ -354,7 +412,7 @@
                 <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-3-think"></textarea>
                 <p class="mb-1 text-sm font-semibold">Emotions it brings up:</p>
                 <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-3-emotions"></textarea>
-                <p class="mb-1 text-sim font-semibold">Where you feel it in your body:</p>
+                <p class="mb-1 text-sm font-semibold">Where you feel it in your body:</p>
                 <textarea class="journal-input" rows="2" data-key="diff-memory-3-body"></textarea>
             </div>
             <div class="journal-box">
@@ -519,28 +577,80 @@
 
     </div>
 
+    <!-- Share Modal -->
+    <div id="shareModal" class="share-modal">
+        <div class="share-modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-semibold text-gray-800">Share Your Progress</h3>
+                <button onclick="closeShareModal()" class="text-gray-500 hover:text-gray-700 text-2xl font-bold">×</button>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                <div class="share-option" onclick="shareViaEmail()">
+                    <div class="text-2xl mb-2">📧</div>
+                    <div class="font-medium text-gray-800">Email</div>
+                    <div class="text-sm text-gray-600">Send via email app</div>
+                </div>
+                
+                <div class="share-option" onclick="copyToClipboard()">
+                    <div class="text-2xl mb-2">📋</div>
+                    <div class="font-medium text-gray-800">Copy to Clipboard</div>
+                    <div class="text-sm text-gray-600">Copy formatted text</div>
+                </div>
+                
+                <div id="webShareOption" class="share-option" onclick="shareViaWebAPI()" style="display: none;">
+                    <div class="text-2xl mb-2">🔗</div>
+                    <div class="font-medium text-gray-800">Share</div>
+                    <div class="text-sm text-gray-600">Use device share menu</div>
+                </div>
+                
+                <div class="share-option" onclick="downloadTextFile()">
+                    <div class="text-2xl mb-2">📄</div>
+                    <div class="font-medium text-gray-800">Download Text</div>
+                    <div class="text-sm text-gray-600">Save as .txt file</div>
+                </div>
+                
+                <div class="share-option" onclick="downloadHtmlFile()">
+                    <div class="text-2xl mb-2">💾</div>
+                    <div class="font-medium text-gray-800">Download HTML</div>
+                    <div class="text-sm text-gray-600">Save as .html file</div>
+                </div>
+            </div>
+            
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <p class="text-sm text-yellow-800">
+                    <strong>Privacy Reminder:</strong> Please share your personal healing information thoughtfully and only with trusted individuals or professionals.
+                </p>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Auto-save functionality
         let saveTimeout;
         
-        function showSaveIndicator(status) {
+        function showSaveIndicator(status, message = '') {
             const indicator = document.getElementById('saveIndicator');
             const text = document.getElementById('saveText');
             
-            indicator.classList.remove('saving', 'saved');
+            indicator.classList.remove('saving', 'saved', 'error', 'success');
             indicator.classList.add('show', status);
             
             if (status === 'saving') {
                 text.textContent = 'Auto-saving...';
             } else if (status === 'saved') {
                 text.textContent = '✓ Saved';
+            } else if (status === 'error') {
+                text.textContent = message || 'Error occurred';
+            } else if (status === 'success') {
+                text.textContent = message || '✓ Success';
             }
             
-            // Hide after 2 seconds if saved
-            if (status === 'saved') {
+            // Hide after 3 seconds if saved, success, or error
+            if (status !== 'saving') {
                 setTimeout(() => {
                     indicator.classList.remove('show');
-                }, 2000);
+                }, 3000);
             }
         }
         
@@ -591,63 +701,82 @@
             });
         }
         
-        function shareWorkbook() {
-            // Check if Web Share API is supported
-            if (navigator.share) {
-                navigator.share({
-                    title: 'EMDR: Your Healing Journey - Interactive Workbook',
-                    text: 'A comprehensive EMDR therapy workbook to help guide your healing journey with structured memory exercises and progress tracking.',
-                    url: window.location.href
-                }).catch(err => {
-                    console.log('Error sharing:', err);
-                    fallbackShare();
-                });
-            } else {
-                fallbackShare();
-            }
-        }
-        
-        function fallbackShare() {
-            // Create a modal or use prompt for sharing options
-            const shareText = `Check out this EMDR Healing Journey Workbook: ${window.location.href}`;
+        // Share functionality
+        function collectAllData() {
+            const data = {
+                positiveMemories: [],
+                difficultMemories: [],
+                progress: {},
+                tracking: {}
+            };
             
-            // Try to copy to clipboard
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(shareText).then(() => {
-                    alert('Link copied to clipboard! You can now paste it anywhere to share.');
-                }).catch(() => {
-                    promptShare(shareText);
-                });
-            } else {
-                promptShare(shareText);
-            }
-        }
-        
-        function promptShare(shareText) {
-            // Fallback: show the text in a prompt for manual copying
-            const userAgent = navigator.userAgent.toLowerCase();
-            if (userAgent.includes('mobile') || userAgent.includes('android') || userAgent.includes('iphone')) {
-                // On mobile, try to select the text
-                const textArea = document.createElement('textarea');
-                textArea.value = shareText;
-                document.body.appendChild(textArea);
-                textArea.select();
-                textArea.setSelectionRange(0, 99999); // For mobile devices
+            // Collect positive memories
+            for (let i = 1; i <= 5; i++) {
+                const memory = {};
+                const what = document.querySelector(`[data-key="pos-memory-${i}-what"]`)?.value || '';
+                const age = document.querySelector(`[data-key="pos-memory-${i}-age"]`)?.value || '';
+                const positive = document.querySelector(`[data-key="pos-memory-${i}-positive"]`)?.value || '';
+                const feeling = document.querySelector(`[data-key="pos-memory-${i}-feeling"]`)?.value || '';
                 
-                try {
-                    document.execCommand('copy');
-                    document.body.removeChild(textArea);
-                    alert('Link copied! You can now paste it to share.');
-                } catch (err) {
-                    document.body.removeChild(textArea);
-                    prompt('Copy this link to share:', shareText);
+                if (what || age || positive || feeling) {
+                    memory.number = i;
+                    if (what) memory.what = what.trim();
+                    if (age) memory.age = age.trim();
+                    if (positive) memory.positive = positive.trim();
+                    if (feeling) memory.feeling = feeling.trim();
+                    data.positiveMemories.push(memory);
                 }
-            } else {
-                prompt('Copy this link to share:', shareText);
             }
+            
+            // Collect difficult memories
+            for (let i = 1; i <= 5; i++) {
+                const memory = {};
+                const what = document.querySelector(`[data-key="diff-memory-${i}-what"]`)?.value || '';
+                const age = document.querySelector(`[data-key="diff-memory-${i}-age"]`)?.value || '';
+                const worst = document.querySelector(`[data-key="diff-memory-${i}-worst"]`)?.value || '';
+                const think = document.querySelector(`[data-key="diff-memory-${i}-think"]`)?.value || '';
+                const emotions = document.querySelector(`[data-key="diff-memory-${i}-emotions"]`)?.value || '';
+                const body = document.querySelector(`[data-key="diff-memory-${i}-body"]`)?.value || '';
+                
+                if (what || age || worst || think || emotions || body) {
+                    memory.number = i;
+                    if (what) memory.what = what.trim();
+                    if (age) memory.age = age.trim();
+                    if (worst) memory.worst = worst.trim();
+                    if (think) memory.think = think.trim();
+                    if (emotions) memory.emotions = emotions.trim();
+                    if (body) memory.body = body.trim();
+                    data.difficultMemories.push(memory);
+                }
+            }
+            
+            // Collect progress tracking
+            const biggestChange = document.querySelector('[data-key="biggest-change"]')?.value || '';
+            const focusNext = document.querySelector('[data-key="focus-next"]')?.value || '';
+            if (biggestChange) data.tracking.biggestChange = biggestChange.trim();
+            if (focusNext) data.tracking.focusNext = focusNext.trim();
+            
+            // Collect progress checkboxes
+            const progressKeys = ['peaceful', 'confident', 'hopeful', 'connected'];
+            progressKeys.forEach(key => {
+                const yesBox = document.querySelector(`[data-key="progress-${key}-yes"]`);
+                const sometimesBox = document.querySelector(`[data-key="progress-${key}-sometimes"]`);
+                const notYetBox = document.querySelector(`[data-key="progress-${key}-not-yet"]`);
+                
+                if (yesBox?.checked || sometimesBox?.checked || notYetBox?.checked) {
+                    let value = '';
+                    if (yesBox?.checked) value = 'Yes';
+                    else if (sometimesBox?.checked) value = 'Sometimes';
+                    else if (notYetBox?.checked) value = 'Not yet';
+                    data.progress[key] = value;
+                }
+            });
+            
+            return data;
         }
         
-        function exportData() {
+        function formatDataForSharing() {
+            const data = collectAllData();
             const now = new Date();
             const dateStr = now.toLocaleDateString('en-US', { 
                 year: 'numeric', 
@@ -655,82 +784,377 @@
                 day: 'numeric' 
             });
             
-            let exportText = `EMDR Healing Journey Guide - ${dateStr}\n`;
-            exportText += `Prepared with Janice LaFountaine, MS, LMFT\n`;
-            exportText += `${'='.repeat(60)}\n\n`;
+            let content = `EMDR: Your Healing Journey - Progress Report\n`;
+            content += `Prepared with Janice LaFountaine, MS, LMFT\n`;
+            content += `Date: ${dateStr}\n`;
+            content += `${'='.repeat(60)}\n\n`;
             
-            // Positive memories
-            let hasPositiveMemories = false;
-            for (let i = 1; i <= 5; i++) {
-                const what = localStorage.getItem(`emdr_guide_pos-memory-${i}-what`) || '';
-                const age = localStorage.getItem(`emdr_guide_pos-memory-${i}-age`) || '';
-                const positive = localStorage.getItem(`emdr_guide_pos-memory-${i}-positive`) || '';
-                const feeling = localStorage.getItem(`emdr_guide_pos-memory-${i}-feeling`) || '';
+            // Add positive memories if any exist
+            if (data.positiveMemories.length > 0) {
+                content += `POSITIVE MEMORIES\n${'-'.repeat(25)}\n`;
+                data.positiveMemories.forEach(memory => {
+                    content += `\nMemory ${memory.number}:\n`;
+                    if (memory.what) content += `• What happened: ${memory.what}\n`;
+                    if (memory.age) content += `• Age: ${memory.age}\n`;
+                    if (memory.positive) content += `• What made it positive: ${memory.positive}\n`;
+                    if (memory.feeling) content += `• How it makes me feel: ${memory.feeling}\n`;
+                });
+                content += `\n`;
+            }
+            
+            // Add difficult memories if any exist
+            if (data.difficultMemories.length > 0) {
+                content += `DIFFICULT MEMORIES\n${'-'.repeat(25)}\n`;
+                data.difficultMemories.forEach(memory => {
+                    content += `\nMemory ${memory.number}:\n`;
+                    if (memory.what) content += `• What happened: ${memory.what}\n`;
+                    if (memory.age) content += `• Age: ${memory.age}\n`;
+                    if (memory.worst) content += `• Worst part/image: ${memory.worst}\n`;
+                    if (memory.think) content += `• How it makes me think about myself: ${memory.think}\n`;
+                    if (memory.emotions) content += `• Emotions: ${memory.emotions}\n`;
+                    if (memory.body) content += `• Body sensations: ${memory.body}\n`;
+                });
+                content += `\n`;
+            }
+            
+            // Add progress if any exists
+            if (Object.keys(data.progress).length > 0 || Object.keys(data.tracking).length > 0) {
+                content += `PROGRESS TRACKING\n${'-'.repeat(25)}\n`;
                 
-                if (what || age || positive || feeling) {
-                    if (!hasPositiveMemories) {
-                        exportText += `POSITIVE MEMORIES\n${'-'.repeat(25)}\n`;
-                        hasPositiveMemories = true;
+                if (data.progress.peaceful) content += `• More peaceful about the past: ${data.progress.peaceful}\n`;
+                if (data.progress.confident) content += `• More confident in myself: ${data.progress.confident}\n`;
+                if (data.progress.hopeful) content += `• More hopeful about the future: ${data.progress.hopeful}\n`;
+                if (data.progress.connected) content += `• More connected to others: ${data.progress.connected}\n`;
+                
+                if (data.tracking.biggestChange) {
+                    content += `\nBiggest change noticed:\n${data.tracking.biggestChange}\n`;
+                }
+                
+                if (data.tracking.focusNext) {
+                    content += `\nWhat to focus on next:\n${data.tracking.focusNext}\n`;
+                }
+                content += `\n`;
+            }
+            
+            // Add footer
+            content += `Generated: ${now.toLocaleString()}\n`;
+            content += `\nThis report was created using the EMDR Healing Journey Workbook\n`;
+            content += `For more information, contact Janice LaFountaine, MS, LMFT`;
+            
+            return content;
+        }
+        
+        function formatDataAsHTML() {
+            const data = collectAllData();
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            
+            let html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EMDR Healing Journey - Progress Report</title>
+    <style>
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+            line-height: 1.6; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 2rem; 
+            background-color: #f9fafb;
+        }
+        .header { 
+            text-align: center; 
+            margin-bottom: 2rem; 
+            padding: 2rem; 
+            background: white; 
+            border-radius: 1rem; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .section { 
+            background: white; 
+            margin: 1.5rem 0; 
+            padding: 1.5rem; 
+            border-radius: 0.75rem; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .section h2 { 
+            color: #374151; 
+            border-bottom: 3px solid #e5e7eb; 
+            padding-bottom: 0.5rem; 
+            margin-bottom: 1rem;
+        }
+        .memory { 
+            background: #f9fafb; 
+            padding: 1rem; 
+            margin: 1rem 0; 
+            border-left: 4px solid #9ca3af; 
+            border-radius: 0.5rem;
+        }
+        .memory h3 { color: #4b5563; margin-bottom: 0.5rem; }
+        .field { margin-bottom: 0.75rem; }
+        .field strong { color: #374151; }
+        .progress-item { 
+            padding: 0.5rem; 
+            margin: 0.25rem 0; 
+            background: #f3f4f6; 
+            border-radius: 0.375rem;
+        }
+        .footer { 
+            text-align: center; 
+            margin-top: 2rem; 
+            padding: 1rem; 
+            color: #6b7280; 
+            font-size: 0.875rem;
+            border-top: 1px solid #e5e7eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>EMDR: Your Healing Journey</h1>
+        <h2>Progress Report</h2>
+        <p><strong>Prepared with Janice LaFountaine, MS, LMFT</strong></p>
+        <p>Date: ${dateStr}</p>
+    </div>
+`;
+            
+            // Add positive memories if any exist
+            if (data.positiveMemories.length > 0) {
+                html += `    <div class="section">
+        <h2>Positive Memories</h2>`;
+                data.positiveMemories.forEach(memory => {
+                    html += `        <div class="memory">
+            <h3>Memory ${memory.number}</h3>`;
+                    if (memory.what) html += `            <div class="field"><strong>What happened:</strong> ${escapeHtml(memory.what)}</div>`;
+                    if (memory.age) html += `            <div class="field"><strong>Age:</strong> ${escapeHtml(memory.age)}</div>`;
+                    if (memory.positive) html += `            <div class="field"><strong>What made it positive:</strong> ${escapeHtml(memory.positive)}</div>`;
+                    if (memory.feeling) html += `            <div class="field"><strong>How it makes me feel:</strong> ${escapeHtml(memory.feeling)}</div>`;
+                    html += `        </div>`;
+                });
+                html += `    </div>
+`;
+            }
+            
+            // Add difficult memories if any exist
+            if (data.difficultMemories.length > 0) {
+                html += `    <div class="section">
+        <h2>Difficult Memories</h2>`;
+                data.difficultMemories.forEach(memory => {
+                    html += `        <div class="memory">
+            <h3>Memory ${memory.number}</h3>`;
+                    if (memory.what) html += `            <div class="field"><strong>What happened:</strong> ${escapeHtml(memory.what)}</div>`;
+                    if (memory.age) html += `            <div class="field"><strong>Age:</strong> ${escapeHtml(memory.age)}</div>`;
+                    if (memory.worst) html += `            <div class="field"><strong>Worst part/image:</strong> ${escapeHtml(memory.worst)}</div>`;
+                    if (memory.think) html += `            <div class="field"><strong>How it makes me think about myself:</strong> ${escapeHtml(memory.think)}</div>`;
+                    if (memory.emotions) html += `            <div class="field"><strong>Emotions:</strong> ${escapeHtml(memory.emotions)}</div>`;
+                    if (memory.body) html += `            <div class="field"><strong>Body sensations:</strong> ${escapeHtml(memory.body)}</div>`;
+                    html += `        </div>`;
+                });
+                html += `    </div>
+`;
+            }
+            
+            // Add progress if any exists
+            if (Object.keys(data.progress).length > 0 || Object.keys(data.tracking).length > 0) {
+                html += `    <div class="section">
+        <h2>Progress Tracking</h2>`;
+                
+                if (Object.keys(data.progress).length > 0) {
+                    html += `        <h3>Current Progress</h3>`;
+                    if (data.progress.peaceful) html += `        <div class="progress-item"><strong>More peaceful about the past:</strong> ${data.progress.peaceful}</div>`;
+                    if (data.progress.confident) html += `        <div class="progress-item"><strong>More confident in myself:</strong> ${data.progress.confident}</div>`;
+                    if (data.progress.hopeful) html += `        <div class="progress-item"><strong>More hopeful about the future:</strong> ${data.progress.hopeful}</div>`;
+                    if (data.progress.connected) html += `        <div class="progress-item"><strong>More connected to others:</strong> ${data.progress.connected}</div>`;
+                }
+                
+                if (data.tracking.biggestChange) {
+                    html += `        <div class="field">
+            <strong>Biggest change noticed:</strong><br>
+            ${escapeHtml(data.tracking.biggestChange).replace(/\n/g, '<br>')}
+        </div>`;
+                }
+                
+                if (data.tracking.focusNext) {
+                    html += `        <div class="field">
+            <strong>What to focus on next:</strong><br>
+            ${escapeHtml(data.tracking.focusNext).replace(/\n/g, '<br>')}
+        </div>`;
+                }
+                
+                html += `    </div>
+`;
+            }
+            
+            // Add footer
+            html += `    <div class="footer">
+        <p>Generated: ${now.toLocaleString()}</p>
+        <p>This report was created using the EMDR Healing Journey Workbook</p>
+        <p>For more information, contact Janice LaFountaine, MS, LMFT</p>
+    </div>
+</body>
+</html>`;
+            
+            return html;
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function openShareModal() {
+            const modal = document.getElementById('shareModal');
+            const webShareOption = document.getElementById('webShareOption');
+            
+            // Show Web Share option only if supported
+            if (navigator.share) {
+                webShareOption.style.display = 'block';
+            } else {
+                webShareOption.style.display = 'none';
+            }
+            
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeShareModal() {
+            const modal = document.getElementById('shareModal');
+            modal.classList.remove('show');
+            document.body.style.overflow = 'auto';
+        }
+        
+        function shareViaEmail() {
+            try {
+                const content = formatDataForSharing();
+                const subject = encodeURIComponent('EMDR Healing Journey - Progress Report');
+                const body = encodeURIComponent(content);
+                const mailtoLink = `mailto:?subject=${subject}&body=${body}`;
+                
+                window.open(mailtoLink);
+                closeShareModal();
+                showSaveIndicator('success', '✓ Email opened');
+            } catch (error) {
+                console.error('Error sharing via email:', error);
+                showSaveIndicator('error', 'Failed to open email');
+            }
+        }
+        
+        async function copyToClipboard() {
+            try {
+                const content = formatDataForSharing();
+                
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(content);
+                    closeShareModal();
+                    showSaveIndicator('success', '✓ Copied to clipboard');
+                } else {
+                    // Fallback for older browsers
+                    const textArea = document.createElement('textarea');
+                    textArea.value = content;
+                    textArea.style.position = 'fixed';
+                    textArea.style.opacity = '0';
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    
+                    const successful = document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    
+                    if (successful) {
+                        closeShareModal();
+                        showSaveIndicator('success', '✓ Copied to clipboard');
+                    } else {
+                        throw new Error('Copy command failed');
                     }
-                    exportText += `Memory ${i}:\n`;
-                    if (what) exportText += `What happened: ${what}\n`;
-                    if (age) exportText += `Age: ${age}\n`;
-                    if (positive) exportText += `What made it positive: ${positive}\n`;
-                    if (feeling) exportText += `How it makes me feel: ${feeling}\n`;
-                    exportText += '\n';
+                }
+            } catch (error) {
+                console.error('Error copying to clipboard:', error);
+                showSaveIndicator('error', 'Failed to copy');
+            }
+        }
+        
+        async function shareViaWebAPI() {
+            try {
+                const content = formatDataForSharing();
+                
+                if (navigator.share) {
+                    await navigator.share({
+                        title: 'EMDR Healing Journey - Progress Report',
+                        text: content
+                    });
+                    closeShareModal();
+                    showSaveIndicator('success', '✓ Shared successfully');
+                } else {
+                    throw new Error('Web Share API not supported');
+                }
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    console.error('Error sharing via Web API:', error);
+                    showSaveIndicator('error', 'Share failed');
                 }
             }
-            if (hasPositiveMemories) exportText += '\n';
-            
-            // Difficult memories
-            let hasDifficultMemories = false;
-            for (let i = 1; i <= 5; i++) {
-                const what = localStorage.getItem(`emdr_guide_diff-memory-${i}-what`) || '';
-                const age = localStorage.getItem(`emdr_guide_diff-memory-${i}-age`) || '';
-                const worst = localStorage.getItem(`emdr_guide_diff-memory-${i}-worst`) || '';
-                const think = localStorage.getItem(`emdr_guide_diff-memory-${i}-think`) || '';
-                const emotions = localStorage.getItem(`emdr_guide_diff-memory-${i}-emotions`) || '';
-                const body = localStorage.getItem(`emdr_guide_diff-memory-${i}-body`) || '';
+        }
+        
+        function downloadTextFile() {
+            try {
+                const content = formatDataForSharing();
+                const now = new Date();
+                const filename = `EMDR-Healing-Journey-${now.toISOString().split('T')[0]}.txt`;
                 
-                if (what || age || worst || think || emotions || body) {
-                    if (!hasDifficultMemories) {
-                        exportText += `DIFFICULT MEMORIES\n${'-'.repeat(25)}\n`;
-                        hasDifficultMemories = true;
-                    }
-                    exportText += `Memory ${i}:\n`;
-                    if (what) exportText += `What happened: ${what}\n`;
-                    if (age) exportText += `Age: ${age}\n`;
-                    if (worst) exportText += `Worst part: ${worst}\n`;
-                    if (think) exportText += `How it makes me think about myself: ${think}\n`;
-                    if (emotions) exportText += `Emotions: ${emotions}\n`;
-                    if (body) exportText += `Body sensations: ${body}\n`;
-                    exportText += '\n';
-                }
+                const blob = new Blob([content], { type: 'text/plain' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                
+                a.href = url;
+                a.download = filename;
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                
+                closeShareModal();
+                showSaveIndicator('success', '✓ Text file downloaded');
+            } catch (error) {
+                console.error('Error downloading text file:', error);
+                showSaveIndicator('error', 'Text download failed');
             }
-            if (hasDifficultMemories) exportText += '\n';
-            
-            // Progress tracking
-            const biggestChange = localStorage.getItem('emdr_guide_biggest-change') || '';
-            const focusNext = localStorage.getItem('emdr_guide_focus-next') || '';
-            if (biggestChange || focusNext) {
-                exportText += `PROGRESS REFLECTIONS\n${'-'.repeat(25)}\n`;
-                if (biggestChange) exportText += `Biggest change noticed:\n${biggestChange}\n\n`;
-                if (focusNext) exportText += `What to focus on next:\n${focusNext}\n\n`;
+        }
+        
+        function downloadHtmlFile() {
+            try {
+                const content = formatDataAsHTML();
+                const now = new Date();
+                const filename = `EMDR-Healing-Journey-${now.toISOString().split('T')[0]}.html`;
+                
+                const blob = new Blob([content], { type: 'text/html' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                
+                a.href = url;
+                a.download = filename;
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                
+                closeShareModal();
+                showSaveIndicator('success', '✓ HTML file downloaded');
+            } catch (error) {
+                console.error('Error downloading HTML file:', error);
+                showSaveIndicator('error', 'HTML download failed');
             }
-            
-            // Add timestamp
-            exportText += `\nGenerated: ${now.toLocaleString()}\n`;
-            
-            // Create and download file
-            const blob = new Blob([exportText], { type: 'text/plain' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `EMDR-Healing-Journey-${now.toISOString().split('T')[0]}.txt`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
+        }
+        
+        function exportData() {
+            downloadTextFile();
         }
         
         function clearAllData() {
@@ -750,7 +1174,7 @@
                     }
                 });
                 
-                alert('All notes have been cleared.');
+                showSaveIndicator('success', '✓ All notes cleared');
             }
         }
         
@@ -758,6 +1182,20 @@
         document.addEventListener('DOMContentLoaded', function() {
             loadData();
             setupAutoSave();
+            
+            // Close modal when clicking backdrop
+            document.getElementById('shareModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeShareModal();
+                }
+            });
+            
+            // Close modal with Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && document.getElementById('shareModal').classList.contains('show')) {
+                    closeShareModal();
+                }
+            });
         });
     </script>
 
