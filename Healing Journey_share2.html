@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EMDR: Your Healing Journey - Interactive Workbook</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            background-color: #f4f0ed;
+        }
+        h1, h2, h3, h4 {
+            font-family: 'Cormorant Garamond', serif;
+        }
+        .section-header {
+            position: relative;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .section-header::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 50px;
+            height: 3px;
+            background-color: #D1D5DB;
+            border-radius: 9999px;
+        }
+        .custom-list-item {
+            display: flex;
+            align-items: flex-start;
+        }
+        .custom-list-item::before {
+            content: '✓';
+            color: #bca05b;
+            font-weight: bold;
+            margin-right: 0.75rem;
+            line-height: 1.5;
+        }
+        .journal-box {
+            background-color: #f0e8e6;
+            border-left: 4px solid #D1D5DB;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+        .journal-input {
+            width: 100%;
+            min-height: 3rem;
+            border: 1px solid #d1d5db;
+            background-color: #fff;
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            resize: vertical;
+            transition: border-color 0.2s ease;
+        }
+        .journal-input:focus {
+            outline: none;
+            border-color: #9CA3AF;
+            box-shadow: 0 0 0 3px rgba(156, 163, 175, 0.1);
+        }
+        .save-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        .save-indicator.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .save-indicator.saving {
+            background-color: #FEF3C7;
+            color: #92400E;
+        }
+        .save-indicator.saved {
+            background-color: #D1FAE5;
+            color: #065F46;
+        }
+        .save-indicator.error {
+            background-color: #FEE2E2;
+            color: #991B1B;
+        }
+        .save-indicator.success {
+            background-color: #D1FAE5;
+            color: #065F46;
+        }
+        /* Share Modal Styles */
+        .share-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .share-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .share-modal-content {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+        .share-modal.show .share-modal-content {
+            transform: scale(1);
+        }
+        .share-option {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .share-option:hover {
+            border-color: #d1d5db;
+            background-color: #f9fafb;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .btn {
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .checkbox-custom {
+            width: 18px;
+            height: 18px;
+            margin-right: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .checkbox-custom:checked {
+            accent-color: #9CA3AF;
+        }
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                background-color: white !important;
+            }
+            .journal-box {
+                background-color: #f9f9f9 !important;
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8">
+
+    <!-- Save Indicator -->
+    <div id="saveIndicator" class="save-indicator">
+        <span id="saveText">Auto-saving...</span>
+    </div>
+
+    <!-- Main Container -->
+    <div class="max-w-4xl mx-auto bg-white p-6 sm:p-10 rounded-3xl shadow-2xl border border-gray-100">
+
+        <!-- Action Buttons -->
+        <div class="no-print flex flex-wrap gap-3 mb-6 justify-center sm:justify-end">
+            <button onclick="openShareModal()" class="btn bg-purple-100 hover:bg-purple-200 text-purple-800 px-4 py-2 rounded-lg">
+                🔗 Share
+            </button>
+            <button onclick="exportData()" class="btn bg-blue-100 hover:bg-blue-200 text-blue-800 px-4 py-2 rounded-lg">
+                📄 Export Notes
+            </button>
+            <button onclick="window.print()" class="btn bg-green-100 hover:bg-green-200 text-green-800 px-4 py-2 rounded-lg">
+                🖨️ Print
+            </button>
+            <button onclick="clearAllData()" class="btn bg-red-100 hover:bg-red-200 text-red-800 px-4 py-2 rounded-lg">
+                🗑️ Clear Notes
+            </button>
+        </div>
+
+        <!-- Introductory Header with Logo on Top -->
+        <header class="flex flex-col items-center mb-6 text-center">
+            <div class="mb-4">
+                <img src="https://i.imgur.com/JwAdvDd.png" alt="Janice LaFountaine, MS, LMFT Logo" class="h-24 w-auto rounded-full">
+            </div>
+            <div class="flex-grow">
+                <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 mb-2">EMDR: Your Healing Journey</h1>
+                <p class="text-gray-600 mb-6 leading-relaxed text-lg">
+                    If you're reading this, you've probably heard about Eye Movement Desensitization and Reprocessing (EMDR) and are wondering what it's really about and how it might help you. EMDR is a gentle but powerful approach to healing that helps your mind process difficult experiences in a new way. While many people think EMDR is just about eye movements, it's actually much more than that. It's a way of helping your brain's natural healing process work more effectively. Think of it like clearing a path so that healing can flow more freely.
+                </p>
+            </div>
+        </header>
+
+        <!-- Why EMDR Can Help -->
+        <h2 class="text-2xl sm:text-3xl font-semibold text-gray-700 mt-8 mb-4 section-header">Why EMDR Can Help</h2>
+        <p class="text-gray-600 mb-6 leading-relaxed">
+            When something difficult or traumatic happens, sometimes our minds hold onto those experiences in ways that can cause ongoing pain. You might find yourself reliving moments, feeling overwhelmed by certain triggers, or sensing that the past is still very present in your body and emotions. This isn't your fault - it's how our minds sometimes protect us. But EMDR can help your brain process these experiences so they feel more like memories from the past rather than present-day threats.
+        </p>
+
+        <!-- The Eight Steps of EMDR -->
+        <h2 class="text-2xl sm:text-3xl font-semibold text-gray-700 mt-12 mb-4 section-header">The Eight Steps of EMDR</h2>
+        <p class="text-gray-600 mb-4 leading-relaxed">
+            EMDR follows eight gentle steps designed to make sure you feel safe and supported throughout your healing journey:
+        </p>
+        <ul class="list-none text-gray-700 space-y-4">
+            <li class="custom-list-item">
+                <div class="flex-1">
+                    <strong class="font-medium text-gray-800">Step 1: Getting to Know You</strong><br>
+                    We'll spend time talking about your history, your strengths, and what you hope for from this process. This helps me understand you as a whole person, not just your struggles. Please share anything that feels important - you know yourself best.
+                </div>
+            </li>
+            <li class="custom-list-item">
+                <div class="flex-1">
+                    <strong class="font-medium text-gray-800">Step 2: Building Your Toolkit</strong><br>
+                    Before we begin processing, we'll make sure you have plenty of resources and coping strategies. Think of this like preparing for a journey - we want to pack everything you might need to feel safe and grounded. This might take one session or several, and that's perfectly okay. Everyone's timeline is different.
+                </div>
+            </li>
+            <li class="custom-list-item">
+                <div class="flex-1">
+                    <strong class="font-medium text-gray-800">Step 3: Focusing on What We'll Work On</strong><br>
+                    Together, we'll identify the specific memory or issue you'd like to focus on. We'll explore what image comes to mind, how it makes you think about yourself, and how you'd rather think about yourself. We'll also notice what emotions and body sensations come up.
+                </div>
+            </li>
+            <li class="custom-list-item">
+                <div class="flex-1">
+                    <strong class="font-medium text-gray-800">Step 4: Processing the Difficult Stuff</strong><br>
+                    This is where the bilateral stimulation (like eye movements, tapping, or sounds) comes in. We'll work through the target memory and anything related to it. Don't worry - you'll be in control the whole time, and we'll check in frequently about how you're feeling.
+                </div>
+            </li>
+            <li class="custom-list-item">
+                <div class="flex-1">
+                    <strong class="font-medium text-gray-800">Step 5: Strengthening the Positive</strong><br>
+                    Once the distressing part has calmed down, we'll strengthen the positive beliefs you want to have about yourself. This helps the healing stick.
+                </div>
+            </li>
+            <li class="custom-list-item">
+                <div class="flex-1">
+                    <strong class="font-medium text-gray-800">Step 6: Body Check</strong><br>
+                    We'll scan your body to make sure there's no lingering tension or discomfort related to what we've processed. Your body holds wisdom, and we want to make sure it feels peaceful too.
+                </div>
+            </li>
+            <li class="custom-list-item">
+                <div class="flex-1">
+                    <strong class="font-medium text-gray-800">Step 7: Gentle Closure</strong><br>
+                    Before you leave, we'll make sure you feel grounded and stable. If anything feels unsettled, we'll work together to help you feel more centered before you go.
+                </div>
+            </li>
+            <li class="custom-list-item">
+                <div class="flex-1">
+                    <strong class="font-medium text-gray-800">Step 8: Checking In Next Time</strong><br>
+                    At the beginning of our next session, we'll talk about how things went between sessions. Sometimes processing continues after we finish, and that's completely normal.
+                </div>
+            </li>
+        </ul>
+
+        <!-- What to Expect Between Sessions -->
+        <h2 class="text-2xl sm:text-3xl font-semibold text-gray-700 mt-12 mb-4 section-header">What to Expect Between Sessions</h2>
+        <p class="text-gray-600 mb-4 leading-relaxed">
+            Once we begin EMDR, your mind may continue processing in gentle ways. You might notice:
+        </p>
+        <ul class="list-disc list-inside text-gray-700 space-y-2">
+            <li>Changes in how you react to old triggers</li>
+            <li>New insights or perspectives</li>
+            <li>Different emotional responses</li>
+            <li>Shifts in your relationships or daily life</li>
+            <li>Dreams or changes in sleep</li>
+            <li>Sometimes, temporary increases in emotions (this usually means healing is happening)</li>
+        </ul>
+        <p class="text-gray-600 italic mt-4">
+            All of this is normal. You're not alone in this process - please reach out if anything feels overwhelming.
+        </p>
+
+        <!-- Building Your 5 Most Important Memories -->
+        <h2 class="text-2xl sm:text-3xl font-semibold text-gray-700 mt-12 mb-4 section-header">Building Your 5 Most Important Memories</h2>
+        <p class="text-gray-600 mb-4 leading-relaxed">
+            I like to begin with knowing what your life experiences have been. I will ask you for the 5 most positive and 5 most difficult memories in your life, your resources, and what things upset you currently. The idea is to find out about you so that I can best help you begin your recovery or healing.
+        </p>
+        <p class="text-gray-600 mb-4 italic">
+            Please fill out the following pieces with this information so you begin to remember in your life until the most current. If you find this exercise too troubling, I will be glad to complete it with you in the session.
+        </p>
+
+        <!-- Positive Memories Section -->
+        <h3 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 mt-8">Your 5 Most Positive Memories</h3>
+        <div class="space-y-6">
+            <div class="journal-box">
+                <h4 class="text-lg font-bold text-gray-700 mb-2">Memory 1:</h4>
+                <p class="mb-1 text-sm font-semibold">What happened:</p>
+                <textarea class="journal-input mb-3" rows="2" data-key="pos-memory-1-what"></textarea>
+                <p class="mb-1 text-sm font-semibold">How old were you:</p>
+                <textarea class="journal-input mb-3" rows="1" data-key="pos-memory-1-age"></textarea>
+                <p class="mb-1 text-sm font-semibold">What made this positive:</p>
+                <textarea class="journal-input mb-3" rows="2" data-key="pos-memory-1-positive"></textarea>
+                <p class="mb-1 text-sm font-semibold">How it makes you feel about yourself:</p>
+                <textarea class="journal-input" rows="2" data-key="pos-memory-1-feeling"></textarea>
+            </div>
+            <div class="journal-box">
+                <h4 class="text-lg font-bold text-gray-700 mb-2">Memory 2:</h4>
+                <p class="mb-1 text-sm font-semibold">What happened:</p>
+                <textarea class="journal-input mb-3" rows="2" data-key="pos-memory-2-what"></textarea>
+                <p class="mb-1 text-sm font-semibold">How old were you:</p>
+                <textarea class="journal-input mb-3" rows="1" data-key="pos-memory-2-age"></textarea>
+                <p class="mb-1 text-sm font-semibold">What made this positive:</p>
+                <textarea class="journal-input mb-3" rows="2" data-key="pos-memory-2-positive"></textarea>
+                <p class="mb-1 text-sm font-semibold">How it makes you feel about yourself:</p>
+                <textarea class="journal-input" rows="2" data-key="pos-memory-2-feeling"></textarea>
+            </div>
+            <div class="journal-box">
+                <h4 class="text-lg font-bold text-gray-700 mb-2">Memory 3:</h4>
+                <p class="mb-1 text-sm font-semibold">What happened:</p>
+                <textarea class="journal-input mb-3" rows="2" data-key="pos-memory-3-what"></textarea>
+                <p class="mb-1 text-sm font-semibold">How old were you:</p>
+                <textarea class="journal-input mb-3" rows="1" data-key="pos-memory-3-age"></textarea>
+                <p class="mb-1 text-sm font-semibold">What made this positive:</p>
+                <textarea class="journal-input mb-3" rows="2" data-key="pos-memory-3-positive"></textarea>
+                <p class="mb-1 text-sm font-semibold">How it makes you feel about yourself:</p>
+                <textarea class="journal-input" rows="2" data-key="pos-memory-3-feeling"></textarea>
+            </div>
+            <div class="journal-box">
+                <h4 class="text-lg font-bold text-gray-700 mb-2">Memory 4:</h4>
+                <p class="mb-1 text-sm font-semibold">What happened:</p>
+                <textarea class="journal-input mb-3" rows="2" data-key="pos-memory-4-what"></textarea>
+                <p class="mb-1 text-sm font-semibold">How old were you:</p>
+                <textarea class="journal-input mb-3" rows="1" data-key="pos-memory-4-age"></textarea>
+                <p class="mb-1 text-sm font-semibold">What made this positive:</p>
+                <textarea class="journal-input mb-3" rows="2" data-key="pos-memory-4-positive"></textarea>
+                <p class="mb-1 text-sm font-semibold">How it makes you feel about yourself:</p>
+                <textarea class="journal-input" rows="2" data-key="pos-memory-4-feeling"></textarea>
+            </div>
+            <div class="journal-box">
+                <h4 class="text-lg font-bold text-gray-700 mb-2">Memory 5:</h4>
+                <p class="mb-1 text-sm font-semibold">What happened:</p>
+                <textarea class="journal-input mb-3" rows="2" data-key="pos-memory-5-what"></textarea>
+                <p class="mb-1 text-sm font-semibold">How old were you:</p>
+                <textarea class="journal-input mb-3" rows="1" data-key="pos-memory-5-age"></textarea>
+                <p class="mb-1 text-sm font-semibold">What made this positive:</p>
+                <textarea class="journal-input mb-3" rows="2" data-key="pos-memory-5-positive"></textarea>
+                <p class="mb-1 text-sm font-semibold">How it makes you feel about yourself:</p>
+                <textarea class="journal-input" rows="2" data-key="pos-memory-5-feeling"></textarea>
+            </div>
+        </div>
+
+        <!-- Difficult Memories Section -->
+        <h3 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 mt-8">Your 5 Most Difficult Memories</h3>
+        <div class="space-y-6">
+            <div class="journal-box">
+                <h4 class="text-lg font-bold text-gray-700 mb-2">Memory 1:</h4>
+                <p class="mb-1 text-sm font-semibold">What happened:</p>
+                <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-1-what"></textarea>
+                <p class="mb-1 text-sm font-semibold">How old were you:</p>
+                <textarea class="journal-input mb-3" rows="1" data-key="diff-memory-1-age"></textarea>
+                <p class="mb-1 text-sm font-semibold">Worst part/image:</p>
+                <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-1-worst"></textarea>
+                <p class="mb-1 text-sm font-semibold">How it makes you think about yourself:</p>
+                <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-1-think"></textarea>
+                <p class="mb-1 text-sm font-semibold">Emotions it brings up:</p>
+                <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-1-emotions"></textarea>
+                <p class="mb-1 text-sm font-semibold">Where you feel it in your body:</p>
+                <textarea class="journal-input" rows="2" data-key="diff-memory-1-body"></textarea>
+            </div>
+            <div class="journal-box">
+                <h4 class="text-lg font-bold text-gray-700 mb-2">Memory 2:</h4>
+                <p class="mb-1 text-sm font-semibold">What happened:</p>
+                <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-2-what"></textarea>
+                <p class="mb-1 text-sm font-semibold">How old were you:</p>
+                <textarea class="journal-input mb-3" rows="1" data-key="diff-memory-2-age"></textarea>
+                <p class="mb-1 text-sm font-semibold">Worst part/image:</p>
+                <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-2-worst"></textarea>
+                <p class="mb-1 text-sm font-semibold">How it makes you think about yourself:</p>
+                <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-2-think"></textarea>
+                <p class="mb-1 text-sm font-semibold">Emotions it brings up:</p>
+                <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-2-emotions"></textarea>
+                <p class="mb-1 text-sm font-semibold">Where you feel it in your body:</p>
+                <textarea class="journal-input" rows="2" data-key="diff-memory-2-body"></textarea>
+            </div>
+            <div class="journal-box">
+                <h4 class="text-lg font-bold text-gray-700 mb-2">Memory 3:</h4>
+                <p class="mb-1 text-sm font-semibold">What happened:</p>
+                <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-3-what"></textarea>
+                <p class="mb-1 text-sm font-semibold">How old were you:</p>
+                <textarea class="journal-input mb-3" rows="1" data-key="diff-memory-3-age"></textarea>
+                <p class="mb-1 text-sm font-semibold">Worst part/image:</p>
+                <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-3-worst"></textarea>
+                <p class="mb-1 text-sm font-semibold">How it makes you think about yourself:</p>
+                <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-3-think"></textarea>
+                <p class="mb-1 text-sm font-semibold">Emotions it brings up:</p>
+                <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-3-emotions"></textarea>
+                <p class="mb-1 text-sm font-semibold">Where you feel it in your body:</p>
+                <textarea class="journal-input" rows="2" data-key="diff-memory-3-body"></textarea>
+            </div>
+            <div class="journal-box">
+                <h4 class="text-lg font-bold text-gray-700 mb-2">Memory 4:</h4>
+                <p class="mb-1 text-sm font-semibold">What happened:</p>
+                <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-4-what"></textarea>
+                <p class="mb-1 text-sm font-semibold">How old were you:</p>
+                <textarea class="journal-input mb-3" rows="1" data-key="diff-memory-4-age"></textarea>
+                <p class="mb-1 text-sm font-semibold">Worst part/image:</p>
+                <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-4-worst"></textarea>
+                <p class="mb-1 text-sm font-semibold">How it makes you think about yourself:</p>
+                <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-4-think"></textarea>
+                <p class="mb-1 text-sm font-semibold">Emotions it brings up:</p>
+                <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-4-emotions"></textarea>
+                <p class="mb-1 text-sm font-semibold">Where you feel it in your body:</p>
+                <textarea class="journal-input" rows="2" data-key="diff-memory-4-body"></textarea>
+            </div>
+            <div class="journal-box">
+                <h4 class="text-lg font-bold text-gray-700 mb-2">Memory 5:</h4>
+                <p class="mb-1 text-sm font-semibold">What happened:</p>
+                <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-5-what"></textarea>
+                <p class="mb-1 text-sm font-semibold">How old were you:</p>
+                <textarea class="journal-input mb-3" rows="1" data-key="diff-memory-5-age"></textarea>
+                <p class="mb-1 text-sm font-semibold">Worst part/image:</p>
+                <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-5-worst"></textarea>
+                <p class="mb-1 text-sm font-semibold">How it makes you think about yourself:</p>
+                <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-5-think"></textarea>
+                <p class="mb-1 text-sm font-semibold">Emotions it brings up:</p>
+                <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-5-emotions"></textarea>
+                <p class="mb-1 text-sm font-semibold">Where you feel it in your body:</p>
+                <textarea class="journal-input" rows="2" data-key="diff-memory-5-body"></textarea>
+            </div>
+        </div>
+        
+        <!-- Healing Journal -->
+        <h2 class="text-2xl sm:text-3xl font-semibold text-gray-700 mt-12 mb-4 section-header">Your Healing Journal</h2>
+        <p class="text-gray-600 mb-4 leading-relaxed">
+            Writing between sessions can be a powerful part of your healing journey. Journaling helps you track your progress, process insights, and connect with your inner wisdom.
+        </p>
+
+        <!-- Journaling Prompts -->
+        <h3 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-4">Journaling Prompts to Guide Your Practice</h3>
+        <ul class="list-disc list-inside text-gray-700 space-y-4">
+            <li><strong class="font-medium text-gray-800">Recording Your Experiences:</strong> Write about the specific memories we're working on in EMDR. Include not just what happened, but how you felt and any body sensations you remember.</li>
+            <li><strong class="font-medium text-gray-800">Noticing Triggers:</strong> Pay attention to what situations or events bring up intense emotions. Jot these down along with any memories or thoughts they trigger.</li>
+            <li><strong class="font-medium text-gray-800">Tracking Your Progress:</strong> Document the shifts you notice - changes in how you feel, new perspectives, or different reactions to old triggers. How are these changes showing up in your daily life?</li>
+            <li><strong class="font-medium text-gray-800">Exploring Insights:</strong> Use your journal to explore the "aha moments" that come up during or after our sessions. What new understandings are emerging about yourself or your experiences?</li>
+            <li><strong class="font-medium text-gray-800">Practicing Self-Compassion:</strong> Write kind messages to yourself. Acknowledge your courage in doing this work and remind yourself that healing happens at its own pace.</li>
+        </ul>
+
+        <!-- Connecting with Your Inner Wisdom -->
+        <h2 class="text-2xl sm:text-3xl font-semibold text-gray-700 mt-12 mb-4 section-header">Connecting with Your Inner Wisdom</h2>
+        <h3 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-3 mt-6">Understanding Your Higher Self</h3>
+        <p class="text-gray-600 mb-4 leading-relaxed">
+            Your Higher Self is that wise, loving part of you that exists beyond your everyday worries and fears. It's the aspect of yourself that's connected to something larger - call it the Divine, Universal Consciousness, or simply your deepest wisdom. This part of you holds your creativity, intuition, and natural healing capacity.
+        </p>
+        
+        <!-- Questions for Higher Self -->
+        <h4 class="text-lg sm:text-xl font-medium text-gray-800 mb-2">Questions to Explore with Your Higher Self:</h4>
+        <div class="text-gray-700 space-y-2">
+            <p>How do I shame myself because of what I've been through, and how can I be more compassionate instead?</p>
+            <p>In what ways do I sabotage myself or block my own goals, and how can I become more supportive of myself?</p>
+            <p>What sadness or grief am I ready to release and transform into love and gratitude?</p>
+        </div>
+
+        <h3 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-3 mt-6">Connecting with Your Inner Child</h3>
+        <p class="text-gray-600 mb-4 leading-relaxed">
+            Your inner child holds the memories of what you've experienced and how those experiences felt. This part of you needs your attention, care, and love. Sometimes feelings of anger, sadness, or disappointment arise because you're not giving yourself the care you deserve - these are signals from your inner child.
+        </p>
+        
+        <!-- Questions for Inner Child -->
+        <h4 class="text-lg sm:text-xl font-medium text-gray-800 mb-2">Questions for Your Inner Child:</h4>
+        <div class="text-gray-700 space-y-2">
+            <p>What anger or rage do you need me to know about? (Write freely without censoring)</p>
+            <p>What do you need from me to feel safe and loved?</p>
+            <p>How do you feel when I really listen to you?</p>
+            <p>What beliefs or messages make you feel angry or ashamed, and how can we replace them with more loving ones?</p>
+        </div>
+
+        <!-- Gentle Coping Strategies -->
+        <h2 class="text-2xl sm:text-3xl font-semibold text-gray-700 mt-12 mb-4 section-header">Gentle Coping Strategies</h2>
+        <p class="text-gray-600 mb-4 leading-relaxed">
+            If you feel overwhelmed between sessions:
+        </p>
+        <ul class="list-disc list-inside text-gray-700 space-y-2">
+            <li><strong class="font-medium text-gray-800">Ground yourself:</strong> Notice 5 things you can see, 4 you can hear, 3 you can touch, 2 you can smell, 1 you can taste</li>
+            <li><strong class="font-medium text-gray-800">Visit your safe place in your mind</strong></li>
+            <li><strong class="font-medium text-gray-800">Use bilateral stimulation:</strong> Gently cross your arms and pat your shoulders alternately (butterfly hug)</li>
+            <li><strong class="font-medium text-gray-800">Breathe slowly:</strong> In for 4, hold for 4, out for 6</li>
+            <li><strong class="font-medium text-gray-800">Call someone from your support network</strong></li>
+            <li><strong class="font-medium text-gray-800">Contact me if you need additional support</strong></li>
+        </ul>
+
+        <!-- Tracking Your Progress -->
+        <h2 class="text-2xl sm:text-3xl font-semibold text-gray-700 mt-12 mb-4 section-header">Tracking Your Progress</h2>
+        <div class="space-y-4 text-gray-700">
+            <p><strong class="font-medium text-gray-800">This week I feel:</strong></p>
+            <div class="flex items-center space-x-4">
+                <span class="font-semibold w-56">More peaceful about the past:</span>
+                <span class="flex-1"><input type="checkbox" class="mr-1 checkbox-custom" data-key="progress-peaceful-yes">Yes</span>
+                <span class="flex-1"><input type="checkbox" class="mr-1 checkbox-custom" data-key="progress-peaceful-sometimes">Sometimes</span>
+                <span class="flex-1"><input type="checkbox" class="mr-1 checkbox-custom" data-key="progress-peaceful-not-yet">Not yet</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span class="font-semibold w-56">More confident in myself:</span>
+                <span class="flex-1"><input type="checkbox" class="mr-1 checkbox-custom" data-key="progress-confident-yes">Yes</span>
+                <span class="flex-1"><input type="checkbox" class="mr-1 checkbox-custom" data-key="progress-confident-sometimes">Sometimes</span>
+                <span class="flex-1"><input type="checkbox" class="mr-1 checkbox-custom" data-key="progress-confident-not-yet">Not yet</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span class="font-semibold w-56">More hopeful about the future:</span>
+                <span class="flex-1"><input type="checkbox" class="mr-1 checkbox-custom" data-key="progress-hopeful-yes">Yes</span>
+                <span class="flex-1"><input type="checkbox" class="mr-1 checkbox-custom" data-key="progress-hopeful-sometimes">Sometimes</span>
+                <span class="flex-1"><input type="checkbox" class="mr-1 checkbox-custom" data-key="progress-hopeful-not-yet">Not yet</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span class="font-semibold w-56">More connected to others:</span>
+                <span class="flex-1"><input type="checkbox" class="mr-1 checkbox-custom" data-key="progress-connected-yes">Yes</span>
+                <span class="flex-1"><input type="checkbox" class="mr-1 checkbox-custom" data-key="progress-connected-sometimes">Sometimes</span>
+                <span class="flex-1"><input type="checkbox" class="mr-1 checkbox-custom" data-key="progress-connected-not-yet">Not yet</span>
+            </div>
+            <div class="mt-6">
+                <p class="font-semibold">The biggest change I've noticed:</p>
+                <textarea class="journal-input mt-2" rows="3" data-key="biggest-change"></textarea>
+            </div>
+            <div>
+                <p class="font-semibold">What I want to focus on next:</p>
+                <textarea class="journal-input mt-2" rows="3" data-key="focus-next"></textarea>
+            </div>
+        </div>
+        
+        <!-- Important Reminders -->
+        <h2 class="text-2xl sm:text-3xl font-semibold text-gray-700 mt-12 mb-4 section-header">Important Reminders</h2>
+        <div class="p-6 bg-[#f0e8e6] rounded-2xl border border-[#D1D5DB]">
+            <ul class="list-disc list-inside text-gray-700 space-y-2">
+                <li><strong class="font-medium text-gray-800">Healing isn't linear</strong> - some days will be easier than others</li>
+                <li><strong class="font-medium text-gray-800">You're braver than you know</strong> for doing this work</li>
+                <li><strong class="font-medium text-gray-800">Small changes are still meaningful changes</strong></li>
+                <li><strong class="font-medium text-gray-800">You don't have to do this alone</strong></li>
+                <li><strong class="font-medium text-gray-800">Your pace is the right pace</strong></li>
+                <li><strong class="font-medium text-gray-800">You deserve healing and peace</strong></li>
+            </ul>
+        </div>
+
+        <!-- Emergency Support -->
+        <h2 class="text-2xl sm:text-3xl font-semibold text-red-600 mt-12 mb-4 section-header">Emergency Support</h2>
+        <div class="p-6 bg-red-50 rounded-2xl border border-red-100">
+            <p class="text-gray-800 font-semibold mb-2">If you're in crisis or feel unsafe:</p>
+            <ul class="list-disc list-inside text-gray-700 space-y-2">
+                <li><strong class="font-medium text-gray-800">Call 988</strong> (Suicide & Crisis Lifeline)</li>
+                <li><strong class="font-medium text-gray-800">Go to your nearest emergency room</strong></li>
+                <li><strong class="font-medium text-gray-800">Call 911</strong></li>
+                <li><strong class="font-medium text-gray-800">Contact me if possible</strong></li>
+            </ul>
+            <p class="text-gray-600 italic mt-4">Remember: Reaching out for help is a sign of strength, not weakness.</p>
+        </div>
+        
+        <!-- Final Paragraph -->
+        <p class="text-gray-600 mt-8 italic text-center text-lg">
+            This guide is your companion on your healing journey. Use what feels helpful and leave what doesn't. Trust yourself - you know what you need.
+        </p>
+
+    </div>
+
+    <!-- Share Modal -->
+    <div id="shareModal" class="share-modal">
+        <div class="share-modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-semibold text-gray-800">Share Your Progress</h3>
+                <button onclick="closeShareModal()" class="text-gray-500 hover:text-gray-700 text-2xl font-bold">×</button>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                <div class="share-option" onclick="shareViaEmail()">
+                    <div class="text-2xl mb-2">📧</div>
+                    <div class="font-medium text-gray-800">Email</div>
+                    <div class="text-sm text-gray-600">Send via email app</div>
+                </div>
+                
+                <div class="share-option" onclick="copyToClipboard()">
+                    <div class="text-2xl mb-2">📋</div>
+                    <div class="font-medium text-gray-800">Copy to Clipboard</div>
+                    <div class="text-sm text-gray-600">Copy formatted text</div>
+                </div>
+                
+                <div id="webShareOption" class="share-option" onclick="shareViaWebAPI()" style="display: none;">
+                    <div class="text-2xl mb-2">🔗</div>
+                    <div class="font-medium text-gray-800">Share</div>
+                    <div class="text-sm text-gray-600">Use device share menu</div>
+                </div>
+                
+                <div class="share-option" onclick="downloadTextFile()">
+                    <div class="text-2xl mb-2">📄</div>
+                    <div class="font-medium text-gray-800">Download Text</div>
+                    <div class="text-sm text-gray-600">Save as .txt file</div>
+                </div>
+                
+                <div class="share-option" onclick="downloadHtmlFile()">
+                    <div class="text-2xl mb-2">💾</div>
+                    <div class="font-medium text-gray-800">Download HTML</div>
+                    <div class="text-sm text-gray-600">Save as .html file</div>
+                </div>
+            </div>
+            
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <p class="text-sm text-yellow-800">
+                    <strong>Privacy Reminder:</strong> Please share your personal healing information thoughtfully and only with trusted individuals or professionals.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto-save functionality
+        let saveTimeout;
+        
+        function showSaveIndicator(status, message = '') {
+            const indicator = document.getElementById('saveIndicator');
+            const text = document.getElementById('saveText');
+            
+            indicator.classList.remove('saving', 'saved', 'error', 'success');
+            indicator.classList.add('show', status);
+            
+            if (status === 'saving') {
+                text.textContent = 'Auto-saving...';
+            } else if (status === 'saved') {
+                text.textContent = '✓ Saved';
+            } else if (status === 'error') {
+                text.textContent = message || 'Error occurred';
+            } else if (status === 'success') {
+                text.textContent = message || '✓ Success';
+            }
+            
+            // Hide after 3 seconds if saved, success, or error
+            if (status !== 'saving') {
+                setTimeout(() => {
+                    indicator.classList.remove('show');
+                }, 3000);
+            }
+        }
+        
+        function saveData(key, value) {
+            try {
+                localStorage.setItem(`emdr_guide_${key}`, value);
+                showSaveIndicator('saved');
+            } catch (e) {
+                console.error('Error saving data:', e);
+            }
+        }
+        
+        function loadData() {
+            // Load text areas and inputs
+            document.querySelectorAll('textarea[data-key], input[data-key]').forEach(element => {
+                const key = element.getAttribute('data-key');
+                const savedValue = localStorage.getItem(`emdr_guide_${key}`);
+                if (savedValue) {
+                    if (element.type === 'checkbox') {
+                        element.checked = savedValue === 'true';
+                    } else {
+                        element.value = savedValue;
+                    }
+                }
+            });
+        }
+        
+        function setupAutoSave() {
+            // Text areas
+            document.querySelectorAll('textarea[data-key]').forEach(textarea => {
+                textarea.addEventListener('input', function() {
+                    clearTimeout(saveTimeout);
+                    showSaveIndicator('saving');
+                    
+                    saveTimeout = setTimeout(() => {
+                        const key = this.getAttribute('data-key');
+                        saveData(key, this.value);
+                    }, 1000);
+                });
+            });
+            
+            // Checkboxes
+            document.querySelectorAll('input[type="checkbox"][data-key]').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const key = this.getAttribute('data-key');
+                    saveData(key, this.checked.toString());
+                });
+            });
+        }
+        
+        // Share functionality
+        function collectAllData() {
+            const data = {
+                positiveMemories: [],
+                difficultMemories: [],
+                progress: {},
+                tracking: {}
+            };
+            
+            // Collect positive memories
+            for (let i = 1; i <= 5; i++) {
+                const memory = {};
+                const what = document.querySelector(`[data-key="pos-memory-${i}-what"]`)?.value || '';
+                const age = document.querySelector(`[data-key="pos-memory-${i}-age"]`)?.value || '';
+                const positive = document.querySelector(`[data-key="pos-memory-${i}-positive"]`)?.value || '';
+                const feeling = document.querySelector(`[data-key="pos-memory-${i}-feeling"]`)?.value || '';
+                
+                if (what || age || positive || feeling) {
+                    memory.number = i;
+                    if (what) memory.what = what.trim();
+                    if (age) memory.age = age.trim();
+                    if (positive) memory.positive = positive.trim();
+                    if (feeling) memory.feeling = feeling.trim();
+                    data.positiveMemories.push(memory);
+                }
+            }
+            
+            // Collect difficult memories
+            for (let i = 1; i <= 5; i++) {
+                const memory = {};
+                const what = document.querySelector(`[data-key="diff-memory-${i}-what"]`)?.value || '';
+                const age = document.querySelector(`[data-key="diff-memory-${i}-age"]`)?.value || '';
+                const worst = document.querySelector(`[data-key="diff-memory-${i}-worst"]`)?.value || '';
+                const think = document.querySelector(`[data-key="diff-memory-${i}-think"]`)?.value || '';
+                const emotions = document.querySelector(`[data-key="diff-memory-${i}-emotions"]`)?.value || '';
+                const body = document.querySelector(`[data-key="diff-memory-${i}-body"]`)?.value || '';
+                
+                if (what || age || worst || think || emotions || body) {
+                    memory.number = i;
+                    if (what) memory.what = what.trim();
+                    if (age) memory.age = age.trim();
+                    if (worst) memory.worst = worst.trim();
+                    if (think) memory.think = think.trim();
+                    if (emotions) memory.emotions = emotions.trim();
+                    if (body) memory.body = body.trim();
+                    data.difficultMemories.push(memory);
+                }
+            }
+            
+            // Collect progress tracking
+            const biggestChange = document.querySelector('[data-key="biggest-change"]')?.value || '';
+            const focusNext = document.querySelector('[data-key="focus-next"]')?.value || '';
+            if (biggestChange) data.tracking.biggestChange = biggestChange.trim();
+            if (focusNext) data.tracking.focusNext = focusNext.trim();
+            
+            // Collect progress checkboxes
+            const progressKeys = ['peaceful', 'confident', 'hopeful', 'connected'];
+            progressKeys.forEach(key => {
+                const yesBox = document.querySelector(`[data-key="progress-${key}-yes"]`);
+                const sometimesBox = document.querySelector(`[data-key="progress-${key}-sometimes"]`);
+                const notYetBox = document.querySelector(`[data-key="progress-${key}-not-yet"]`);
+                
+                if (yesBox?.checked || sometimesBox?.checked || notYetBox?.checked) {
+                    let value = '';
+                    if (yesBox?.checked) value = 'Yes';
+                    else if (sometimesBox?.checked) value = 'Sometimes';
+                    else if (notYetBox?.checked) value = 'Not yet';
+                    data.progress[key] = value;
+                }
+            });
+            
+            return data;
+        }
+        
+        function formatDataForSharing() {
+            const data = collectAllData();
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            
+            let content = `EMDR: Your Healing Journey - Progress Report\n`;
+            content += `Prepared with Janice LaFountaine, MS, LMFT\n`;
+            content += `Date: ${dateStr}\n`;
+            content += `${'='.repeat(60)}\n\n`;
+            
+            // Add positive memories if any exist
+            if (data.positiveMemories.length > 0) {
+                content += `POSITIVE MEMORIES\n${'-'.repeat(25)}\n`;
+                data.positiveMemories.forEach(memory => {
+                    content += `\nMemory ${memory.number}:\n`;
+                    if (memory.what) content += `• What happened: ${memory.what}\n`;
+                    if (memory.age) content += `• Age: ${memory.age}\n`;
+                    if (memory.positive) content += `• What made it positive: ${memory.positive}\n`;
+                    if (memory.feeling) content += `• How it makes me feel: ${memory.feeling}\n`;
+                });
+                content += `\n`;
+            }
+            
+            // Add difficult memories if any exist
+            if (data.difficultMemories.length > 0) {
+                content += `DIFFICULT MEMORIES\n${'-'.repeat(25)}\n`;
+                data.difficultMemories.forEach(memory => {
+                    content += `\nMemory ${memory.number}:\n`;
+                    if (memory.what) content += `• What happened: ${memory.what}\n`;
+                    if (memory.age) content += `• Age: ${memory.age}\n`;
+                    if (memory.worst) content += `• Worst part/image: ${memory.worst}\n`;
+                    if (memory.think) content += `• How it makes me think about myself: ${memory.think}\n`;
+                    if (memory.emotions) content += `• Emotions: ${memory.emotions}\n`;
+                    if (memory.body) content += `• Body sensations: ${memory.body}\n`;
+                });
+                content += `\n`;
+            }
+            
+            // Add progress if any exists
+            if (Object.keys(data.progress).length > 0 || Object.keys(data.tracking).length > 0) {
+                content += `PROGRESS TRACKING\n${'-'.repeat(25)}\n`;
+                
+                if (data.progress.peaceful) content += `• More peaceful about the past: ${data.progress.peaceful}\n`;
+                if (data.progress.confident) content += `• More confident in myself: ${data.progress.confident}\n`;
+                if (data.progress.hopeful) content += `• More hopeful about the future: ${data.progress.hopeful}\n`;
+                if (data.progress.connected) content += `• More connected to others: ${data.progress.connected}\n`;
+                
+                if (data.tracking.biggestChange) {
+                    content += `\nBiggest change noticed:\n${data.tracking.biggestChange}\n`;
+                }
+                
+                if (data.tracking.focusNext) {
+                    content += `\nWhat to focus on next:\n${data.tracking.focusNext}\n`;
+                }
+                content += `\n`;
+            }
+            
+            // Add footer
+            content += `Generated: ${now.toLocaleString()}\n`;
+            content += `\nThis report was created using the EMDR Healing Journey Workbook\n`;
+            content += `For more information, contact Janice LaFountaine, MS, LMFT`;
+            
+            return content;
+        }
+        
+        function formatDataAsHTML() {
+            const data = collectAllData();
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            
+            let html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EMDR Healing Journey - Progress Report</title>
+    <style>
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
+            line-height: 1.6; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 2rem; 
+            background-color: #f9fafb;
+        }
+        .header { 
+            text-align: center; 
+            margin-bottom: 2rem; 
+            padding: 2rem; 
+            background: white; 
+            border-radius: 1rem; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .section { 
+            background: white; 
+            margin: 1.5rem 0; 
+            padding: 1.5rem; 
+            border-radius: 0.75rem; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .section h2 { 
+            color: #374151; 
+            border-bottom: 3px solid #e5e7eb; 
+            padding-bottom: 0.5rem; 
+            margin-bottom: 1rem;
+        }
+        .memory { 
+            background: #f9fafb; 
+            padding: 1rem; 
+            margin: 1rem 0; 
+            border-left: 4px solid #9ca3af; 
+            border-radius: 0.5rem;
+        }
+        .memory h3 { color: #4b5563; margin-bottom: 0.5rem; }
+        .field { margin-bottom: 0.75rem; }
+        .field strong { color: #374151; }
+        .progress-item { 
+            padding: 0.5rem; 
+            margin: 0.25rem 0; 
+            background: #f3f4f6; 
+            border-radius: 0.375rem;
+        }
+        .footer { 
+            text-align: center; 
+            margin-top: 2rem; 
+            padding: 1rem; 
+            color: #6b7280; 
+            font-size: 0.875rem;
+            border-top: 1px solid #e5e7eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>EMDR: Your Healing Journey</h1>
+        <h2>Progress Report</h2>
+        <p><strong>Prepared with Janice LaFountaine, MS, LMFT</strong></p>
+        <p>Date: ${dateStr}</p>
+    </div>
+`;
+            
+            // Add positive memories if any exist
+            if (data.positiveMemories.length > 0) {
+                html += `    <div class="section">
+        <h2>Positive Memories</h2>`;
+                data.positiveMemories.forEach(memory => {
+                    html += `        <div class="memory">
+            <h3>Memory ${memory.number}</h3>`;
+                    if (memory.what) html += `            <div class="field"><strong>What happened:</strong> ${escapeHtml(memory.what)}</div>`;
+                    if (memory.age) html += `            <div class="field"><strong>Age:</strong> ${escapeHtml(memory.age)}</div>`;
+                    if (memory.positive) html += `            <div class="field"><strong>What made it positive:</strong> ${escapeHtml(memory.positive)}</div>`;
+                    if (memory.feeling) html += `            <div class="field"><strong>How it makes me feel:</strong> ${escapeHtml(memory.feeling)}</div>`;
+                    html += `        </div>`;
+                });
+                html += `    </div>
+`;
+            }
+            
+            // Add difficult memories if any exist
+            if (data.difficultMemories.length > 0) {
+                html += `    <div class="section">
+        <h2>Difficult Memories</h2>`;
+                data.difficultMemories.forEach(memory => {
+                    html += `        <div class="memory">
+            <h3>Memory ${memory.number}</h3>`;
+                    if (memory.what) html += `            <div class="field"><strong>What happened:</strong> ${escapeHtml(memory.what)}</div>`;
+                    if (memory.age) html += `            <div class="field"><strong>Age:</strong> ${escapeHtml(memory.age)}</div>`;
+                    if (memory.worst) html += `            <div class="field"><strong>Worst part/image:</strong> ${escapeHtml(memory.worst)}</div>`;
+                    if (memory.think) html += `            <div class="field"><strong>How it makes me think about myself:</strong> ${escapeHtml(memory.think)}</div>`;
+                    if (memory.emotions) html += `            <div class="field"><strong>Emotions:</strong> ${escapeHtml(memory.emotions)}</div>`;
+                    if (memory.body) html += `            <div class="field"><strong>Body sensations:</strong> ${escapeHtml(memory.body)}</div>`;
+                    html += `        </div>`;
+                });
+                html += `    </div>
+`;
+            }
+            
+            // Add progress if any exists
+            if (Object.keys(data.progress).length > 0 || Object.keys(data.tracking).length > 0) {
+                html += `    <div class="section">
+        <h2>Progress Tracking</h2>`;
+                
+                if (Object.keys(data.progress).length > 0) {
+                    html += `        <h3>Current Progress</h3>`;
+                    if (data.progress.peaceful) html += `        <div class="progress-item"><strong>More peaceful about the past:</strong> ${data.progress.peaceful}</div>`;
+                    if (data.progress.confident) html += `        <div class="progress-item"><strong>More confident in myself:</strong> ${data.progress.confident}</div>`;
+                    if (data.progress.hopeful) html += `        <div class="progress-item"><strong>More hopeful about the future:</strong> ${data.progress.hopeful}</div>`;
+                    if (data.progress.connected) html += `        <div class="progress-item"><strong>More connected to others:</strong> ${data.progress.connected}</div>`;
+                }
+                
+                if (data.tracking.biggestChange) {
+                    html += `        <div class="field">
+            <strong>Biggest change noticed:</strong><br>
+            ${escapeHtml(data.tracking.biggestChange).replace(/\n/g, '<br>')}
+        </div>`;
+                }
+                
+                if (data.tracking.focusNext) {
+                    html += `        <div class="field">
+            <strong>What to focus on next:</strong><br>
+            ${escapeHtml(data.tracking.focusNext).replace(/\n/g, '<br>')}
+        </div>`;
+                }
+                
+                html += `    </div>
+`;
+            }
+            
+            // Add footer
+            html += `    <div class="footer">
+        <p>Generated: ${now.toLocaleString()}</p>
+        <p>This report was created using the EMDR Healing Journey Workbook</p>
+        <p>For more information, contact Janice LaFountaine, MS, LMFT</p>
+    </div>
+</body>
+</html>`;
+            
+            return html;
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function openShareModal() {
+            const modal = document.getElementById('shareModal');
+            const webShareOption = document.getElementById('webShareOption');
+            
+            // Show Web Share option only if supported
+            if (navigator.share) {
+                webShareOption.style.display = 'block';
+            } else {
+                webShareOption.style.display = 'none';
+            }
+            
+            modal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeShareModal() {
+            const modal = document.getElementById('shareModal');
+            modal.classList.remove('show');
+            document.body.style.overflow = 'auto';
+        }
+        
+        function shareViaEmail() {
+            try {
+                const content = formatDataForSharing();
+                const subject = encodeURIComponent('EMDR Healing Journey - Progress Report');
+                const body = encodeURIComponent(content);
+                const mailtoLink = `mailto:?subject=${subject}&body=${body}`;
+                
+                window.open(mailtoLink);
+                closeShareModal();
+                showSaveIndicator('success', '✓ Email opened');
+            } catch (error) {
+                console.error('Error sharing via email:', error);
+                showSaveIndicator('error', 'Failed to open email');
+            }
+        }
+        
+        async function copyToClipboard() {
+            try {
+                const content = formatDataForSharing();
+                
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(content);
+                    closeShareModal();
+                    showSaveIndicator('success', '✓ Copied to clipboard');
+                } else {
+                    // Fallback for older browsers
+                    const textArea = document.createElement('textarea');
+                    textArea.value = content;
+                    textArea.style.position = 'fixed';
+                    textArea.style.opacity = '0';
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    
+                    const successful = document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    
+                    if (successful) {
+                        closeShareModal();
+                        showSaveIndicator('success', '✓ Copied to clipboard');
+                    } else {
+                        throw new Error('Copy command failed');
+                    }
+                }
+            } catch (error) {
+                console.error('Error copying to clipboard:', error);
+                showSaveIndicator('error', 'Failed to copy');
+            }
+        }
+        
+        async function shareViaWebAPI() {
+            try {
+                const content = formatDataForSharing();
+                
+                if (navigator.share) {
+                    await navigator.share({
+                        title: 'EMDR Healing Journey - Progress Report',
+                        text: content
+                    });
+                    closeShareModal();
+                    showSaveIndicator('success', '✓ Shared successfully');
+                } else {
+                    throw new Error('Web Share API not supported');
+                }
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    console.error('Error sharing via Web API:', error);
+                    showSaveIndicator('error', 'Share failed');
+                }
+            }
+        }
+        
+        function downloadTextFile() {
+            try {
+                const content = formatDataForSharing();
+                const now = new Date();
+                const filename = `EMDR-Healing-Journey-${now.toISOString().split('T')[0]}.txt`;
+                
+                const blob = new Blob([content], { type: 'text/plain' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                
+                a.href = url;
+                a.download = filename;
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                
+                closeShareModal();
+                showSaveIndicator('success', '✓ Text file downloaded');
+            } catch (error) {
+                console.error('Error downloading text file:', error);
+                showSaveIndicator('error', 'Text download failed');
+            }
+        }
+        
+        function downloadHtmlFile() {
+            try {
+                const content = formatDataAsHTML();
+                const now = new Date();
+                const filename = `EMDR-Healing-Journey-${now.toISOString().split('T')[0]}.html`;
+                
+                const blob = new Blob([content], { type: 'text/html' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                
+                a.href = url;
+                a.download = filename;
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                
+                closeShareModal();
+                showSaveIndicator('success', '✓ HTML file downloaded');
+            } catch (error) {
+                console.error('Error downloading HTML file:', error);
+                showSaveIndicator('error', 'HTML download failed');
+            }
+        }
+        
+        function exportData() {
+            downloadTextFile();
+        }
+        
+        function clearAllData() {
+            if (confirm('Are you sure you want to clear all your notes? This cannot be undone.')) {
+                // Get all keys that start with our prefix
+                const keys = Object.keys(localStorage).filter(key => key.startsWith('emdr_guide_'));
+                
+                // Remove all our data
+                keys.forEach(key => localStorage.removeItem(key));
+                
+                // Clear all form fields
+                document.querySelectorAll('textarea[data-key], input[data-key]').forEach(element => {
+                    if (element.type === 'checkbox') {
+                        element.checked = false;
+                    } else {
+                        element.value = '';
+                    }
+                });
+                
+                showSaveIndicator('success', '✓ All notes cleared');
+            }
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            setupAutoSave();
+            
+            // Close modal when clicking backdrop
+            document.getElementById('shareModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeShareModal();
+                }
+            });
+            
+            // Close modal with Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && document.getElementById('shareModal').classList.contains('show')) {
+                    closeShareModal();
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
