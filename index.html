@@ -134,6 +134,9 @@
 
         <!-- Action Buttons -->
         <div class="no-print flex flex-wrap gap-3 mb-6 justify-center sm:justify-end">
+            <button onclick="shareWorkbook()" class="btn bg-purple-100 hover:bg-purple-200 text-purple-800 px-4 py-2 rounded-lg">
+                📤 Share
+            </button>
             <button onclick="exportData()" class="btn bg-blue-100 hover:bg-blue-200 text-blue-800 px-4 py-2 rounded-lg">
                 📄 Export Notes
             </button>
@@ -351,7 +354,7 @@
                 <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-3-think"></textarea>
                 <p class="mb-1 text-sm font-semibold">Emotions it brings up:</p>
                 <textarea class="journal-input mb-3" rows="2" data-key="diff-memory-3-emotions"></textarea>
-                <p class="mb-1 text-sm font-semibold">Where you feel it in your body:</p>
+                <p class="mb-1 text-sim font-semibold">Where you feel it in your body:</p>
                 <textarea class="journal-input" rows="2" data-key="diff-memory-3-body"></textarea>
             </div>
             <div class="journal-box">
@@ -588,6 +591,62 @@
             });
         }
         
+        function shareWorkbook() {
+            // Check if Web Share API is supported
+            if (navigator.share) {
+                navigator.share({
+                    title: 'EMDR: Your Healing Journey - Interactive Workbook',
+                    text: 'A comprehensive EMDR therapy workbook to help guide your healing journey with structured memory exercises and progress tracking.',
+                    url: window.location.href
+                }).catch(err => {
+                    console.log('Error sharing:', err);
+                    fallbackShare();
+                });
+            } else {
+                fallbackShare();
+            }
+        }
+        
+        function fallbackShare() {
+            // Create a modal or use prompt for sharing options
+            const shareText = `Check out this EMDR Healing Journey Workbook: ${window.location.href}`;
+            
+            // Try to copy to clipboard
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(shareText).then(() => {
+                    alert('Link copied to clipboard! You can now paste it anywhere to share.');
+                }).catch(() => {
+                    promptShare(shareText);
+                });
+            } else {
+                promptShare(shareText);
+            }
+        }
+        
+        function promptShare(shareText) {
+            // Fallback: show the text in a prompt for manual copying
+            const userAgent = navigator.userAgent.toLowerCase();
+            if (userAgent.includes('mobile') || userAgent.includes('android') || userAgent.includes('iphone')) {
+                // On mobile, try to select the text
+                const textArea = document.createElement('textarea');
+                textArea.value = shareText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                textArea.setSelectionRange(0, 99999); // For mobile devices
+                
+                try {
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    alert('Link copied! You can now paste it to share.');
+                } catch (err) {
+                    document.body.removeChild(textArea);
+                    prompt('Copy this link to share:', shareText);
+                }
+            } else {
+                prompt('Copy this link to share:', shareText);
+            }
+        }
+        
         function exportData() {
             const now = new Date();
             const dateStr = now.toLocaleDateString('en-US', { 
@@ -703,4 +762,5 @@
     </script>
 
 </body>
+
 </html>
